@@ -1,5 +1,8 @@
 import { addDays, lastDayOf, monthOf, weekday } from './calendar.ts';
-import { progressBetween, type CardSpan, type Counts } from './evaluate.ts';
+import { evaluateSquare, progressBetween, type CardSpan, type Counts } from './evaluate.ts';
+import type { NudgeSquare } from './nudges.ts';
+import type { SquareState } from './square-state.ts';
+import type { TodayRowData } from './types.ts';
 import type { HabitRule } from './habit-rules.ts';
 import { clippedWeeks, weekOf } from './weeks.ts';
 
@@ -70,4 +73,71 @@ function weekProgress(rule: HabitRule, span: CardSpan, counts: Counts, day: stri
 	// `day` is always inside the card's span, so it has a week.
 	const { start, end, required } = week!;
 	return { required, end, progress: progressBetween(rule, counts, start, end) };
+}
+
+type TodaySquare =
+	| { id: string; isCenter: true }
+	| ({ id: string; isCenter: false; icon: string; name: string } & HabitRule);
+
+/**
+ * Today's rows by section. Each row is the square as it is on `day`, and as it will be after one
+ * more check-in (capped at `maxCount`) or one fewer, so the page can show the result before the
+ * server answers (spec §6).
+ */
+export function todayRows(
+	card: CardSpan & { squares: readonly TodaySquare[] },
+	checkIns: ReadonlyMap<string, Counts>,
+	day: string,
+	today: string,
+	maxCount: number
+): Record<TodaySection, TodayRowData[]> {
+	const sections: Record<TodaySection, TodayRowData[]> = {
+		doToday: [],
+		thisWeek: [],
+		done: [],
+		anytime: [],
+		slip: []
+	};
+	for (const square of card.squares) {
+		if (square.isCenter) continue;
+		const counts = checkIns.get(square.id) ?? new Map<string, number>();
+		const count = counts.get(day) ?? 0;
+		const view = (dayCount: number) => {
+			const next = new Map(counts);
+			if (dayCount > 0) next.set(day, dayCount);
+			else next.delete(day);
+			return {
+				...evaluateSquare(square, card, next, today),
+				text: progressText(square, card, next, day, today),
+				count: dayCount
+			};
+		};
+		sections[todaySection(square, card, counts, day)].push({
+			squareId: square.id,
+			icon: square.icon,
+			name: square.name,
+			...view(count),
+			ifLogged: view(Math.min(count + 1, maxCount)),
+			ifUndone: count > 0 ? view(count - 1) : null
+		});
+	}
+	return sections;
+}
+
+/** The heads-up nudges' view of each square: the card's rule and counts beside the board's view. */
+export function nudgeSquares(
+	squares: readonly (
+		{ id: string; isCenter: true } | ({ id: string; isCenter: false } & HabitRule)
+	)[],
+	board: readonly { name: string; state: SquareState; counting: boolean }[],
+	checkIns: ReadonlyMap<string, Counts>
+): NudgeSquare[] {
+	return squares.map((square, index) => ({
+		id: square.isCenter ? null : square.id,
+		name: board[index].name,
+		state: board[index].state,
+		counting: board[index].counting,
+		rule: square.isCenter ? null : square,
+		counts: checkIns.get(square.id) ?? new Map<string, number>()
+	}));
 }

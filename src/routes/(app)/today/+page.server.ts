@@ -2,10 +2,8 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { backfillDates, backfillMonths } from '#lib/game/backfill.ts';
 import { monthName, monthOf } from '#lib/game/calendar.ts';
 import { CARD_SIZES } from '#lib/game/card-layout.ts';
-import { evaluateSquare } from '#lib/game/evaluate.ts';
 import { nudges } from '#lib/game/nudges.ts';
-import { progressText, todaySection, type TodaySection } from '#lib/game/today.ts';
-import type { TodayRowData } from '#lib/components/TodayRow.svelte';
+import { nudgeSquares, todayRows } from '#lib/game/today.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { getCard, type Card } from '#lib/server/cards.ts';
 import { cardView } from '#lib/server/card-view.ts';
@@ -45,38 +43,7 @@ export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	const card = cards.find((c) => c.month === monthOf(day))!;
 	const checkIns = await getCheckIns(db, card.id);
 
-	const sections: Record<TodaySection, TodayRowData[]> = {
-		doToday: [],
-		thisWeek: [],
-		done: [],
-		anytime: [],
-		slip: []
-	};
-	for (const square of card.squares) {
-		if (square.isCenter) continue;
-		const counts = checkIns.get(square.id) ?? new Map<string, number>();
-		const count = counts.get(day) ?? 0;
-		// The row as it is, and as it will be after one more check-in or one fewer, so the page can
-		// show the result before the server answers (spec §6).
-		const view = (dayCount: number) => {
-			const next = new Map(counts);
-			if (dayCount > 0) next.set(day, dayCount);
-			else next.delete(day);
-			return {
-				...evaluateSquare(square, card, next, today),
-				text: progressText(square, card, next, day, today),
-				count: dayCount
-			};
-		};
-		sections[todaySection(square, card, counts, day)].push({
-			squareId: square.id,
-			icon: square.icon,
-			name: square.name,
-			...view(count),
-			ifLogged: view(Math.min(count + 1, MAX_COUNT)),
-			ifUndone: count > 0 ? view(count - 1) : null
-		});
-	}
+	const sections = todayRows(card, checkIns, day, today, MAX_COUNT);
 	const board = await cardView(db, user.id, card, today, checkIns);
 	// Heads up (spec §4.8): only on today's view of this month's card.
 	const headsUp =
@@ -85,14 +52,7 @@ export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 					size: card.size,
 					span: card,
 					today,
-					squares: card.squares.map((square, index) => ({
-						id: square.isCenter ? null : square.id,
-						name: board.squares[index].name,
-						state: board.squares[index].state,
-						counting: board.squares[index].counting,
-						rule: square.isCenter ? null : square,
-						counts: checkIns.get(square.id) ?? new Map<string, number>()
-					})),
+					squares: nudgeSquares(card.squares, board.squares, checkIns),
 					rewards: card.rewards,
 					nextMonthName: board.nextMonthName
 				})

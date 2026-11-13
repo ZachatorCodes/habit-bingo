@@ -1,5 +1,4 @@
 import { error, fail, redirect, type Cookies } from '@sveltejs/kit';
-import * as z from 'zod';
 import {
 	BOOTSTRAP_INVITE_CODE,
 	GOOGLE_CLIENT_ID,
@@ -11,35 +10,13 @@ import { redirectToGoogle, startGoogleSignIn } from '#lib/server/auth/google.ts'
 import { getAuth } from '#lib/server/auth/index.ts';
 import { getJoinStatus } from '#lib/server/auth/invites.ts';
 import { checkAndRecordIp, TOO_MANY_ATTEMPTS_MESSAGE } from '#lib/server/auth/ip-limit.ts';
-import { checkPassword, PASSWORD_MESSAGES } from '#lib/server/auth/password-policy.ts';
-import { signUpWithPassword, USERNAME_RULES_MESSAGE } from '#lib/server/auth/sign-up.ts';
+import { signUpWithPassword, validateSignUpForm } from '#lib/server/auth/sign-up.ts';
 
 import { formText, requestClock, requireDb } from '#lib/server/request.ts';
 import { DEAD_LINK_MESSAGE, getMembership, groupForInvite, joinGroup } from '#lib/server/groups.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 type Field = 'username' | 'name' | 'password' | 'form';
-
-const signUpForm = z
-	.object({
-		username: z
-			.string({ error: USERNAME_RULES_MESSAGE })
-			.trim()
-			.regex(/^[a-z0-9_]{3,20}$/i, { error: USERNAME_RULES_MESSAGE }),
-		name: z
-			.string({ error: 'Enter a display name.' })
-			.trim()
-			.min(1, { error: 'Enter a display name.' })
-			.max(40, { error: 'Use at most 40 characters.' }),
-		password: z.string({ error: PASSWORD_MESSAGES.tooShort })
-	})
-	.superRefine(async ({ username, password }, ctx) => {
-		// The local rules only, so every field's problem shows at once. The breach lookup runs in the
-		// sign-up hook, after these pass.
-		const problem = await checkPassword(password, username, async () => false);
-		if (problem)
-			ctx.addIssue({ code: 'custom', path: ['password'], message: PASSWORD_MESSAGES[problem] });
-	});
 
 const googleEnabled = () => Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
 
@@ -116,21 +93,17 @@ export const actions: Actions = {
 			return fail(429, { values, errors });
 		}
 
-		const parsed = await signUpForm.safeParseAsync({
+		const parsed = await validateSignUpForm({
 			username: formData.get('username'),
 			name: formData.get('name'),
 			password: formData.get('password')
 		});
-		if (!parsed.success) {
-			const errors: Partial<Record<Field, string>> = {};
-			for (const issue of parsed.error.issues) {
-				const field = issue.path[0] as Field;
-				errors[field] ??= issue.message;
-			}
+		if (!parsed.ok) {
+			const errors: Partial<Record<Field, string>> = parsed.errors;
 			return fail(400, { values, errors });
 		}
 
-		const result = await signUpWithPassword(getAuth(), parsed.data, request.headers);
+		const result = await signUpWithPassword(getAuth(), parsed.value, request.headers);
 		if (!result.ok) {
 			const errors: Partial<Record<Field, string>> = { [result.field]: result.message };
 			return fail(400, { values, errors });

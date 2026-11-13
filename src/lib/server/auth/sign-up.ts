@@ -1,7 +1,7 @@
 import { APIError } from 'better-auth/api';
 import type { Auth } from './create-auth.ts';
 import { FULL_MESSAGE } from '#lib/server/groups.ts';
-import { PASSWORD_MESSAGES } from './password-policy.ts';
+import { checkPassword, PASSWORD_MESSAGES } from './password-policy.ts';
 
 export type SignUpResult =
 	{ ok: true } | { ok: false; field: 'username' | 'password' | 'form'; message: string };
@@ -68,4 +68,35 @@ export async function signUpWithPassword(
 		if (isUniqueViolation(error)) return { ok: false, ...ERRORS.USERNAME_IS_ALREADY_TAKEN };
 		throw error;
 	}
+}
+
+type SignUpField = 'username' | 'name' | 'password';
+
+/**
+ * Checks the sign-up form's fields as submitted (a missing field is not a string), reporting every
+ * field's problem at once. The local password rules run only when all three fields arrived; the
+ * breach lookup runs later, in the sign-up hook.
+ */
+export async function validateSignUpForm(
+	input: Record<SignUpField, unknown>
+): Promise<
+	| { ok: true; value: { username: string; name: string; password: string } }
+	| { ok: false; errors: Partial<Record<SignUpField, string>> }
+> {
+	const errors: Partial<Record<SignUpField, string>> = {};
+	const username = typeof input.username === 'string' ? input.username.trim() : null;
+	const name = typeof input.name === 'string' ? input.name.trim() : null;
+	const password = typeof input.password === 'string' ? input.password : null;
+	if (username === null || !/^[a-z0-9_]{3,20}$/i.test(username))
+		errors.username = USERNAME_RULES_MESSAGE;
+	if (name === null || name.length < 1) errors.name = 'Enter a display name.';
+	else if (name.length > 40) errors.name = 'Use at most 40 characters.';
+	if (password === null) errors.password = PASSWORD_MESSAGES.tooShort;
+	if (username !== null && name !== null && password !== null) {
+		const problem = await checkPassword(password, username, async () => false);
+		if (problem) errors.password ??= PASSWORD_MESSAGES[problem];
+	}
+	if (username === null || name === null || password === null || Object.keys(errors).length > 0)
+		return { ok: false, errors };
+	return { ok: true, value: { username, name, password } };
 }

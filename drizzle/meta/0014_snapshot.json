@@ -1,5 +1,5 @@
 {
-  "id": "96200d1e-9469-481e-8631-12e4aca4d9e7",
+  "id": "6162aaf3-38ef-4b67-8012-596575aaf98d",
   "prevId": "06fbb245-2cb5-42b4-92eb-fbc257e52f13",
   "version": "7",
   "dialect": "postgresql",
@@ -1208,6 +1208,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "points": {
+          "name": "points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "lines": {
           "name": "lines",

@@ -34,8 +34,11 @@ column, no UI.
 - **No points anywhere:**
   - `squarePoints`, `CardScore.points`, the line bonus (+25) and the blackout bonus (+100) are
     deleted.
-  - `month_result.points` is dropped (migration `0014`; the planned emoji-column drop becomes
-    `0015`).
+  - `month_result.points` is removed in two deploys, so the running app never queries a missing
+    column during a deploy (decided in final review):
+    - this change: migration `0014` makes it nullable, and nothing writes or shows it;
+    - a follow-up PR, once this is live: migration `0015` drops it. The planned emoji-column drop
+      becomes `0016`.
   - The owner explicitly approved deleting the saved points data.
 
 ## Leaderboard

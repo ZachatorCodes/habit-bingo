@@ -13,7 +13,7 @@
 
 <!-- Bottom padding leaves room for the following sheet to overlap by 18px (-mt-[18px] on the sheet). -->
 <header
-	class="relative overflow-hidden bg-forest px-5 pt-[calc(2rem+var(--safe-top))] pb-12 text-surface md:m-4 md:rounded-[24px] lg:mx-0 lg:px-8 lg:pb-10"
+	class="relative overflow-hidden bg-forest px-5 pt-[calc(2rem+var(--safe-top))] pb-12 text-surface md:m-4 md:rounded-[24px] lg:px-8 lg:pb-10 lg:[.app-shell_&]:mx-0"
 >
 	<svg
 		aria-hidden="true"

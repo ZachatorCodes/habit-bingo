@@ -357,6 +357,13 @@ test('the shared header is 40px and as wide as a full-width panel at desktop', a
 	}
 });
 
+test('public pages keep the inset header at desktop', async ({ page }, info) => {
+	test.skip(info.project.name !== 'desktop');
+	await page.goto('/signin');
+	const header = (await page.locator('header').first().boundingBox())!;
+	expect(header.x).toBeGreaterThanOrEqual(16);
+});
+
 test("today's board has bigger icons than the card page at desktop", async ({ page }, info) => {
 	test.skip(info.project.name !== 'desktop');
 	await newMemberWithHabits(page, 8);

@@ -85,7 +85,7 @@ describe('finalizeMonths', () => {
 		await finalizeMonths(db, me.id, '2026-11-04');
 		const { score } = await cardView(db, me.id, card, '2026-11-04');
 		const saved = await getResult(db, me.id, '2026-10');
-		expect(saved?.points).toBeNull(); // no longer written; the column is dropped later
+		expect(saved).not.toHaveProperty('points');
 		expect(saved).toMatchObject({
 			month: '2026-10',
 			lines: score.lines.length,

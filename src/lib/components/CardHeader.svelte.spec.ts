@@ -32,13 +32,13 @@ const props = (overrides: { states?: SquareState[] } & Record<string, unknown> =
 };
 
 describe('CardHeader', () => {
-	it('shows the month, days left, points and percent complete', async () => {
+	it('shows the month, days left and percent complete, with no points', async () => {
 		render(CardHeader, props());
 		await expect
 			.element(page.getByRole('heading', { level: 1, name: 'October card' }))
 			.toBeVisible();
 		await expect.element(page.getByText('14 days left')).toBeVisible();
-		await expect.element(page.getByText('120pts')).toBeVisible();
+		expect(page.getByText(/pts|points/).elements()).toHaveLength(0);
 		await expect.element(page.getByText('44% complete')).toBeVisible();
 	});
 

@@ -3,7 +3,7 @@ import { CARD_SIZES, type CardSize } from './card-layout.ts';
 import { progressBetween, type CardSpan, type Counts } from './evaluate.ts';
 import type { HabitRule } from './habit-rules.ts';
 import type { SquareState } from './square-state.ts';
-import { clippedWeeks } from './weeks.ts';
+import { clippedWeeks, weekOf } from './weeks.ts';
 
 export { counts } from './square-state.ts';
 
@@ -56,54 +56,48 @@ export function nextTier(reached: Tier[]): Tier | null {
 }
 
 /**
- * A habit square's points out of 10 (spec §3.7), unrounded. Earn squares and `atLeast` day/week
- * squares score their progress (and keep it when lost); limits of 0 and daily limits score per
- * clean finished day, other limits 10 after the month, unless lost.
+ * How much of a habit square's whole-month job is done, 0 to 1 (spec: % complete). A lost square
+ * counts nothing. Limits fill a share for each finished card day still within the limit.
  */
-export function squarePoints(
+export function squareCompletion(
 	rule: HabitRule,
 	span: CardSpan,
 	counts: Counts,
 	today: string,
 	state: SquareState
 ): number {
+	if (state === 'lost') return 0;
 	const monthEnd = lastDayOf(monthOf(span.startDate));
-	if (rule.direction === 'atMost' && (rule.target === 0 || rule.period === 'day')) {
-		// Paid per finished day within the limit; a slip day pays nothing, the rest are kept.
-		const limit = rule.period === 'day' ? rule.target : 0;
+	const days: string[] = [];
+	for (let d = span.startDate; d <= monthEnd; d = addDays(d, 1)) days.push(d);
+	if (rule.direction === 'atMost') {
 		const finished = addDays(today, -1) < monthEnd ? addDays(today, -1) : monthEnd;
-		let clean = 0;
-		let spanDays = 0;
-		for (let d = span.startDate; d <= monthEnd; d = addDays(d, 1)) {
-			spanDays++;
-			if (d <= finished && (counts.get(d) ?? 0) <= limit) clean++;
-		}
-		return (10 * clean) / spanDays;
+		const weeks = clippedWeeks(rule, span.startDate, span.weekStartsOn);
+		const within = (d: string) => {
+			if (rule.target === 0) return (counts.get(d) ?? 0) === 0;
+			if (rule.period === 'day') return (counts.get(d) ?? 0) <= rule.target;
+			const from = rule.period === 'week' ? weekOf(weeks, d)!.start : span.startDate;
+			return progressBetween(rule, counts, from, d) <= rule.target;
+		};
+		return days.filter((d) => d <= finished && within(d)).length / days.length;
 	}
-	// Other limits are only won once the month is over.
-	if (rule.direction === 'atMost') return state !== 'lost' && today > monthEnd ? 10 : 0;
 	if (rule.period === 'month') {
 		const k = progressBetween(rule, counts, span.startDate, today);
-		return (10 * Math.min(k, rule.target)) / rule.target;
+		return Math.min(k, rule.target) / rule.target;
 	}
 	if (rule.period === 'day') {
-		let met = 0;
-		let spanDays = 0;
-		for (let d = span.startDate; d <= monthEnd; d = addDays(d, 1)) {
-			spanDays++;
-			met += Math.min(counts.get(d) ?? 0, rule.target);
-		}
-		return (10 * met) / (rule.target * spanDays);
+		const met = days.reduce((sum, d) => sum + Math.min(counts.get(d) ?? 0, rule.target), 0);
+		return met / (rule.target * days.length);
 	}
 	const weeks = clippedWeeks(rule, span.startDate, span.weekStartsOn);
 	const required = weeks.reduce((sum, week) => sum + week.required, 0);
-	if (required === 0) return 10;
+	if (required === 0) return 1;
 	const met = weeks.reduce(
 		(sum, week) =>
 			sum + Math.min(progressBetween(rule, counts, week.start, week.end), week.required),
 		0
 	);
-	return (10 * met) / required;
+	return met / required;
 }
 
 export type CardScore = {
@@ -111,29 +105,22 @@ export type CardScore = {
 	percent: number;
 	lines: number[][];
 	tiers: Tier[];
-	points: number;
 };
 
 /**
- * The card's totals (spec §3.6–§3.7): +25 per complete line, +100 for blackout, rounded once at
- * the end. `squares` are in board order, the center included.
+ * The card's lines, tiers and % complete (every habit square's completion, averaged; the center is
+ * left out). `squares` are in board order, the center included.
  */
 export function scoreCard(
 	size: CardSize,
-	squares: { points: number; counting: boolean }[]
+	squares: { completion: number; counting: boolean }[]
 ): CardScore {
 	const counting = squares.map((square) => square.counting);
-	const lines = completeLines(counting, size);
-	const tiers = reachedTiers(counting, size);
-	const base = squares.reduce((sum, square) => sum + square.points, 0);
-	const bonus = 25 * lines.length + (tiers.includes('blackout') ? 100 : 0);
-	const total = counting.filter(Boolean).length;
+	const done = squares.reduce((sum, square) => sum + square.completion, 0);
 	return {
-		counting: total,
-		// Progress: every habit square's points out of 10, averaged (the center scores nothing).
-		percent: Math.round((100 * base) / (10 * CARD_SIZES[size].habits)),
-		lines,
-		tiers,
-		points: Math.round(base + bonus)
+		counting: counting.filter(Boolean).length,
+		percent: Math.round((100 * done) / CARD_SIZES[size].habits),
+		lines: completeLines(counting, size),
+		tiers: reachedTiers(counting, size)
 	};
 }

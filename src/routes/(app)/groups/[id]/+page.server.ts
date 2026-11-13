@@ -28,10 +28,9 @@ export const load: PageServerLoad = async ({ locals, cookies, params, url }) => 
 	if (!membership) error(404, 'Not found');
 	const t = url.searchParams.get('tab');
 	const tab = t === 'members' || t === 'leaderboard' ? t : 'feed';
-	const board = url.searchParams.get('board') === 'all' ? 'all' : 'month';
 	const members = await listMembers(db, params.id);
 	const feed = await groupFeed(db, user.id, params.id, url.searchParams.get('before') ?? undefined);
-	const leaderboard = await groupBoard(db, user.id, params.id, board, now);
+	const leaderboard = await groupBoard(db, user.id, params.id, now);
 	if (!leaderboard || !feed) error(404, 'Not found');
 	const heir = members.find((m) => m.userId !== user.id);
 	return {
@@ -39,7 +38,6 @@ export const load: PageServerLoad = async ({ locals, cookies, params, url }) => 
 		isOwner: membership.role === 'owner',
 		updated: url.searchParams.get('updated') === '1',
 		tab,
-		board,
 		members: members.map(({ userId, displayUsername, avatarIcon, role }) => ({
 			userId,
 			displayUsername: displayUsername ?? 'Someone',

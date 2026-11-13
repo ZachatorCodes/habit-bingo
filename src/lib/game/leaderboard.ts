@@ -1,16 +1,22 @@
 /**
- * Group leaderboard order (spec §3.9): points descending with competition ranks (1, 1, 3), then
- * people with no card (`points: null`, no rank) in input order. Array sort is stable, so ties and
- * the no-card rows keep input order.
+ * Group leaderboard order: % complete descending, then more complete lines, then display name A–Z,
+ * with competition ranks (1, 1, 3) over equal % and lines. People with no card (`percent: null`)
+ * come last, unranked, in input order.
  */
-export function rankRows<T extends { points: number | null }>(
-	rows: T[]
-): (T & { rank: number | null })[] {
-	const scored = rows.filter((r) => r.points !== null).sort((a, b) => b.points! - a.points!);
-	// Competition rank: the first row with this many points sits at index + 1.
+export function rankRows<
+	T extends { percent: number | null; lines: number | null; displayUsername: string }
+>(rows: T[]): (T & { rank: number | null })[] {
+	const scored = rows
+		.filter((r) => r.percent !== null)
+		.sort(
+			(a, b) =>
+				b.percent! - a.percent! ||
+				b.lines! - a.lines! ||
+				a.displayUsername.localeCompare(b.displayUsername)
+		);
 	const ranked = scored.map((r) => ({
 		...r,
-		rank: scored.findIndex((s) => s.points === r.points) + 1
+		rank: scored.findIndex((s) => s.percent === r.percent && s.lines === r.lines) + 1
 	}));
-	return [...ranked, ...rows.filter((r) => r.points === null).map((r) => ({ ...r, rank: null }))];
+	return [...ranked, ...rows.filter((r) => r.percent === null).map((r) => ({ ...r, rank: null }))];
 }

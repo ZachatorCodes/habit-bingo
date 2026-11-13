@@ -32,7 +32,6 @@ export async function finalizeMonths(db: Db, userId: string, today: string): Pro
 			.values({
 				userId,
 				month,
-				points: score.points,
 				lines: score.lines.length,
 				tiers: score.tiers,
 				squaresCounting: score.counting,

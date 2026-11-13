@@ -39,7 +39,7 @@ test('a finished month gets a banner, a recap and a History entry', async ({ pag
 	await expect(banner(page)).toHaveCount(0);
 	await page.goto('/me');
 	await page.getByRole('link', { name: /History/ }).click();
-	await expect(page.getByRole('link', { name: /^October 2026 · \d+ points?/ })).toBeVisible();
+	await expect(page.getByRole('link', { name: /^October 2026 · \d+ lines?/ })).toBeVisible();
 });
 
 test('on the 3rd the month is still open: no banner, no history', async ({ page }) => {

@@ -1,5 +1,4 @@
 import { and, eq, inArray } from 'drizzle-orm';
-import { backfillMonths } from '#lib/game/backfill.ts';
 import { monthName, monthOf } from '#lib/game/calendar.ts';
 import { rankRows } from '#lib/game/leaderboard.ts';
 import type { CardScore } from '#lib/game/score.ts';
@@ -9,13 +8,13 @@ import { localDate } from '#lib/server/clock.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { habit } from '#lib/server/db/schema.ts';
 import { getMembership, listMembers } from '#lib/server/groups.ts';
-import { finalizeMonths, listResults } from '#lib/server/month-results.ts';
 
 export type BoardRow = {
 	userId: string;
 	displayUsername: string;
 	avatarIcon: string;
-	points: number | null;
+	/** % complete on this month's card; null without a card. */
+	percent: number | null;
 	lines: number | null;
 	rank: number | null;
 	isViewer: boolean;
@@ -25,67 +24,35 @@ type Member = Awaited<ReturnType<typeof listMembers>>[number];
 
 const todayOf = (member: Member, now: Date) => localDate(now, member.timezone ?? 'UTC');
 
-/** A member's live score for one month's card, or null when they have none. */
-async function liveScore(db: Db, userId: string, month: string, today: string) {
-	const card = await getCard(db, userId, month);
-	return card ? (await cardView(db, userId, card, today)).score : null;
-}
-
 /**
- * The group's leaderboard as the viewer sees it (spec §3.9). Each member is scored on their own
- * local date. `all` adds saved results to the live months, which include a closing month that is
- * not final yet; `provisionalMonth` names the viewer's closing month when a total counts it.
+ * The group's leaderboard for this month, as the viewer sees it. Each member is scored on their own
+ * local date (spec: % complete, then lines, then name).
  */
 export async function groupBoard(
 	db: Db,
 	viewerId: string,
 	groupId: string,
-	board: 'month' | 'all',
 	now: Date
-): Promise<{ rows: BoardRow[]; provisionalMonth: string | null } | null> {
+): Promise<{ rows: BoardRow[] } | null> {
 	if (!(await getMembership(db, viewerId, groupId, now))) return null;
 	const members = await listMembers(db, groupId);
-	const viewer = members.find((m) => m.userId === viewerId);
-	if (!viewer) return null;
-	const viewerToday = todayOf(viewer, now);
-	const closing = backfillMonths(viewerToday).find((m) => m < monthOf(viewerToday)) ?? null;
-	let provisional = false;
-
+	if (!members.some((m) => m.userId === viewerId)) return null;
 	const rows = await Promise.all(
 		members.map(async (m) => {
 			const today = todayOf(m, now);
-			let points: number | null = null;
-			let lines: number | null = null;
-			if (board === 'month') {
-				const score = await liveScore(db, m.userId, monthOf(today), today);
-				if (score) [points, lines] = [score.points, score.lines.length];
-			} else {
-				await finalizeMonths(db, m.userId, today);
-				[points, lines] = [0, 0];
-				for (const r of await listResults(db, m.userId)) {
-					points += r.points;
-					lines += r.lines;
-				}
-				// Months still open to logging have no saved result yet: count them live.
-				for (const month of backfillMonths(today)) {
-					const score = await liveScore(db, m.userId, month, today);
-					if (!score) continue;
-					points += score.points;
-					lines += score.lines.length;
-					if (month === closing) provisional = true;
-				}
-			}
+			const card = await getCard(db, m.userId, monthOf(today));
+			const score = card ? (await cardView(db, m.userId, card, today)).score : null;
 			return {
 				userId: m.userId,
 				displayUsername: m.displayUsername ?? 'Someone',
 				avatarIcon: m.avatarIcon,
-				points,
-				lines,
+				percent: score?.percent ?? null,
+				lines: score ? score.lines.length : null,
 				isViewer: m.userId === viewerId
 			};
 		})
 	);
-	return { rows: rankRows(rows), provisionalMonth: provisional ? closing : null };
+	return { rows: rankRows(rows) };
 }
 
 /** A member's current card for the viewer: private habits show as a lock icon, no ids, links or rewards. */

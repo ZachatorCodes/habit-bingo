@@ -63,7 +63,7 @@ test('reaching a reward from the sheet closes it and celebrates on the card', as
 	await freshCard(page, baseURL!);
 	await page.goto('/card');
 	await waitForHydration(page);
-	// Each goal is 10 of the card's 80 points.
+	// Each goal is one of the card's 8 habit squares.
 	for (const [i, name] of GOALS.entries()) {
 		await page.getByRole('link', { name: new RegExp(`^${name}: `) }).click();
 		const sheet = page.getByRole('dialog', { name });

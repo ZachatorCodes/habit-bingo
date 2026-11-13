@@ -31,7 +31,7 @@ race your friends up the group leaderboard.
   can still be logged later, up to today.
 - **Groups.** Invite friends with a link. Each group has:
   - a **Feed** of everyone's check-ins and highlights, with icon reactions;
-  - a live **Leaderboard**;
+  - a live **Leaderboard** of this month's % complete;
   - **Members**, where you can view each other's cards.
 - **Month end.** The month closes on the 4th, after a 3-day grace period for last-minute logging.
   You get a recap and final standings, and the last week's center square nudges you to build next
@@ -54,17 +54,18 @@ race your friends up the group leaderboard.
 6. **Finish the month.** Go for lines, the squares reward and the blackout. Build next month's card by
    the 3rd to complete the last center square.
 
-### Points
+### % complete
 
-- **Every habit square is worth up to 10 points,** earned as you go:
-  - **monthly goals:** by progress toward the target;
-  - **every-day and every-week habits:** by the days or weeks met;
-  - **limits of 0 and daily limits:** a share for each finished day you stay within them (a slip
-    day earns nothing, and the clean days are kept);
-  - **other limits:** 10 at month end if you stayed under.
-- **+25 per complete line and +100 for a blackout.**
-- **Both card sizes score the same:** at most 380 on a 3×3 and 640 on a 5×5.
-- **The card's "% complete"** is your average progress across its squares.
+Your card shows how much of the month you've completed: the average of every habit square's
+completion of its whole-month job.
+
+- **Monthly goals:** progress toward the target.
+- **Every-day and every-week habits:** the days or weeks met, out of the whole month.
+- **Limits:** a share for each finished day you're still within the limit.
+- **Failed squares count nothing,** until you win them back.
+
+So a perfect player is at about half on the 15th and reaches 100% when the month ends. The group
+leaderboard ranks this month's cards by % complete, then by complete lines.
 
 ## Stack
 

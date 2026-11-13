@@ -15,7 +15,7 @@
 		period: 'day' | 'week' | 'month';
 		state: SquareState;
 		progress: number;
-		/** Counts toward lines, tiers and points now. */
+		/** Counts toward lines and tiers now. */
 		counting: boolean;
 		stateText: string;
 		progressText: string;

@@ -319,7 +319,7 @@ test('today header at desktop: a 40px title, no summary or card link, as wide as
 	expect(Math.abs(h.width - panel.width)).toBeLessThanOrEqual(1);
 });
 
-test('today board column at desktop: level with the list, points and card link under it', async ({
+test('today board column at desktop: level with the list, card link under it', async ({
 	page
 }, info) => {
 	test.skip(info.project.name !== 'desktop');
@@ -336,9 +336,7 @@ test('today board column at desktop: level with the list, points and card link u
 	const bottom = await squares.evaluateAll((els) =>
 		Math.max(...els.map((el) => el.getBoundingClientRect().bottom))
 	);
-	const points = column.getByText(/^\d+\s*pts$/);
 	const link = column.getByRole('link', { name: 'See your October card' });
-	expect((await points.boundingBox())!.y).toBeGreaterThan(bottom);
 	expect((await link.boundingBox())!.y).toBeGreaterThan(bottom);
 });
 

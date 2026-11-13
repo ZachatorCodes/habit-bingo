@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CARD_SIZES } from '#lib/game/card-layout.ts';
 import type { Db } from '#lib/server/db/client.ts';
-import { cardSquare, habit, monthResult, user } from '#lib/server/db/schema.ts';
+import { cardSquare, habit, user } from '#lib/server/db/schema.ts';
 import { createTestDb } from '#lib/server/db/test-db.ts';
 import { eq } from 'drizzle-orm';
-import { cardView } from './card-view.ts';
 import { startCard, type CardPlan } from './cards.ts';
 import { logCheckIn } from './check-ins.ts';
 import { createGroup, getMembership, joinGroup } from './groups.ts';
@@ -93,22 +92,25 @@ beforeEach(async () => {
 	db = await createTestDb();
 });
 
-describe('groupBoard month', () => {
-	it('ranks by points, puts no-card last, flags the viewer, hides from strangers', async () => {
+describe('groupBoard', () => {
+	it('ranks by % complete, puts no-card last, flags the viewer, hides from strangers', async () => {
 		const [a, b, c] = [await makeUser(), await makeUser(), await makeUser()];
 		const { groupId } = await setup(a, b, c);
 		await logSome(a, await cardFor(a, OCT_1), 2, '2026-10-20');
 		await logSome(b, await cardFor(b, OCT_1), 4, '2026-10-20');
 		const now = new Date('2026-10-20T15:00:00Z');
-		const board = (await groupBoard(db, a.id, groupId, 'month', now))!;
+		const board = (await groupBoard(db, a.id, groupId, now))!;
 		expect(board.rows.map((r) => r.userId).slice(0, 2)).toEqual([b.id, a.id]);
-		expect(board.rows.at(-1)!.points).toBeNull();
+		const top = board.rows[0];
+		expect(top.percent).toBeGreaterThan(board.rows[1].percent!);
+		expect(top).not.toHaveProperty('points');
+		expect(board.rows.at(-1)!.percent).toBeNull();
 		expect(board.rows.at(-1)!.rank).toBeNull();
 		expect(board.rows.filter((r) => r.isViewer).map((r) => r.userId)).toEqual([a.id]);
 		expect(board.rows).toHaveLength(4);
-		expect(board.provisionalMonth).toBeNull();
+		expect(board).not.toHaveProperty('provisionalMonth');
 		const stranger = await makeUser();
-		expect(await groupBoard(db, stranger.id, groupId, 'month', now)).toBeNull();
+		expect(await groupBoard(db, stranger.id, groupId, now)).toBeNull();
 	});
 
 	it('scores each member on their own local month', async () => {
@@ -117,52 +119,9 @@ describe('groupBoard month', () => {
 		const { groupId } = await setup(kiri, utc);
 		await logSome(kiri, await cardFor(kiri, OCT_1), 2, '2026-10-30');
 		await logSome(utc, await cardFor(utc, OCT_1), 2, '2026-10-30');
-		const board = (await groupBoard(
-			db,
-			utc.id,
-			groupId,
-			'month',
-			new Date('2026-10-31T11:30:00Z')
-		))!;
-		expect(board.rows.find((r) => r.userId === kiri.id)!.points).toBeNull();
-		expect(board.rows.find((r) => r.userId === utc.id)!.points).toBeGreaterThan(0);
-	});
-});
-
-describe('groupBoard all', () => {
-	it('finalizes finished months by viewing and adds live points', async () => {
-		const sleeper = await makeUser();
-		const { owner, groupId } = await setup(sleeper);
-		const oct = await cardFor(sleeper, OCT_1);
-		await logSome(sleeper, oct, 3, '2026-10-20');
-		const nov = await cardFor(sleeper, '2026-11-01T09:00:00Z');
-		await logSome(sleeper, nov, 2, '2026-11-03');
-		const nov4 = new Date('2026-11-04T09:00:00Z');
-		const board = (await groupBoard(db, owner.id, groupId, 'all', nov4))!;
-		const [result] = await db.select().from(monthResult).where(eq(monthResult.userId, sleeper.id));
-		expect(result.month).toBe('2026-10');
-		const row = board.rows.find((r) => r.userId === sleeper.id)!;
-		const live = (await cardView(db, sleeper.id, nov, '2026-11-04')).score;
-		expect(live.points).toBeGreaterThan(0);
-		expect(row.points).toBe(result.points + live.points);
-		expect(row.lines).toBe(result.lines + live.lines.length);
-		expect(board.rows.find((r) => r.userId === owner.id)).toMatchObject({ points: 0, rank: 2 });
-		expect(board.provisionalMonth).toBeNull();
-	});
-
-	it('marks the closing month provisional while it can still change', async () => {
-		const other = await makeUser();
-		const { owner, groupId } = await setup(other);
-		await logSome(other, await cardFor(other, OCT_1), 3, '2026-10-20');
-		const board = (await groupBoard(
-			db,
-			owner.id,
-			groupId,
-			'all',
-			new Date('2026-11-02T09:00:00Z')
-		))!;
-		expect(board.provisionalMonth).toBe('2026-10');
-		expect(board.rows.find((r) => r.userId === other.id)!.points).toBeGreaterThan(0);
+		const board = (await groupBoard(db, utc.id, groupId, new Date('2026-10-31T11:30:00Z')))!;
+		expect(board.rows.find((r) => r.userId === kiri.id)!.percent).toBeNull();
+		expect(board.rows.find((r) => r.userId === utc.id)!.percent).toBeGreaterThan(0);
 	});
 });
 

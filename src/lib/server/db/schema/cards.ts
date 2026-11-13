@@ -101,7 +101,8 @@ export const monthResult = pgTable(
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
 		month: text('month').notNull(),
-		points: integer('points').notNull(),
+		/** Unused: points were removed. Nullable so the column can be dropped in a later migration. */
+		points: integer('points'),
 		lines: integer('lines').notNull(),
 		tiers: text('tiers').array().$type<Tier[]>().notNull(),
 		squaresCounting: integer('squares_counting').notNull(),

@@ -178,10 +178,13 @@ test('heads up points at what needs doing today', async ({ page }) => {
 	await expect(page.getByRole('region', { name: 'Heads up' })).toHaveCount(0);
 });
 
-test('no card yet', async ({ page }) => {
+test('no card yet', async ({ page }, info) => {
 	await newMember(page);
 	await page.goto('/today');
-	await expect(page.getByText('No card yet', { exact: true })).toBeVisible();
+	// From 1024px the header has no summary; the side column says it instead.
+	if (info.project.name !== 'desktop') {
+		await expect(page.getByText('No card yet', { exact: true })).toBeVisible();
+	}
 	await expect(page.getByRole('link', { name: 'Build one' })).toBeVisible();
 });
 

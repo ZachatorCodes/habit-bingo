@@ -6,7 +6,7 @@ import { currentMonth, getCard, isEditable } from '#lib/server/cards.ts';
 import { TEST_CLOCK } from '$app/env/private';
 import { cardView } from '#lib/server/card-view.ts';
 import { formatEditDeadline, localDate, requestNow } from '#lib/server/clock.ts';
-import { requireDb } from '#lib/server/request.ts';
+import { personOf, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Your card is not available right now.';
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	// The habit sheet asks for a fresh copy with ?refresh=…; reading it makes SvelteKit rerun this load.
 	void url.searchParams.get('refresh');
 	const db = requireDb(UNAVAILABLE);
-	const timezone = user.timezone ?? 'UTC';
+	const timezone = personOf(user).timezone;
 	const now = requestNow(cookies, TEST_CLOCK);
 	const month = currentMonth({ timezone }, now);
 	const [card, draft] = await Promise.all([
@@ -62,7 +62,7 @@ export const actions: Actions = {
 		const card = await getCard(
 			db,
 			user.id,
-			currentMonth({ timezone: user.timezone ?? 'UTC' }, now)
+			currentMonth({ timezone: personOf(user).timezone }, now)
 		);
 		if (!card) redirect(303, '/card/build');
 		if (!isEditable(card, now)) return fail(400, { message: 'This card is locked.' });

@@ -12,7 +12,7 @@ import { getCard, type Card } from '#lib/server/cards.ts';
 import { cardView } from '#lib/server/card-view.ts';
 import { getCheckIns, logCheckIn, MAX_COUNT } from '#lib/server/check-ins.ts';
 import { localDate, localHour, requestNow } from '#lib/server/clock.ts';
-import { requireDb } from '#lib/server/request.ts';
+import { personOf, requireDb } from '#lib/server/request.ts';
 import { finalizeMonths, markSeen, newestUnseen } from '#lib/server/month-results.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -21,7 +21,7 @@ const UNAVAILABLE = 'Today is not available right now.';
 export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	const user = requireUser(locals);
 	const db = requireDb(UNAVAILABLE);
-	const timezone = user.timezone ?? 'UTC';
+	const timezone = personOf(user).timezone;
 	const now = requestNow(cookies, TEST_CLOCK);
 	const today = localDate(now, timezone);
 	const month = monthOf(today);
@@ -134,7 +134,7 @@ async function log(
 	};
 	const result = await logCheckIn(
 		requireDb(UNAVAILABLE),
-		{ id: user.id, timezone: user.timezone ?? 'UTC' },
+		{ id: user.id, timezone: personOf(user).timezone },
 		field('squareId'),
 		field('date'),
 		delta,

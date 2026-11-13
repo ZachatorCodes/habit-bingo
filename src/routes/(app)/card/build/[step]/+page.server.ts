@@ -37,7 +37,7 @@ import {
 	type Card
 } from '#lib/server/cards.ts';
 import type { Db } from '#lib/server/db/client.ts';
-import { requireDb } from '#lib/server/request.ts';
+import { personOf, requireDb } from '#lib/server/request.ts';
 import { DEFAULT_HABIT_INPUT, readHabitForm } from '#lib/server/habit-form.ts';
 import { createHabit, listHabits, type Habit } from '#lib/server/habits.ts';
 import type { SquareState } from '#lib/game/square-state.ts';
@@ -56,9 +56,10 @@ async function builderContext(locals: App.Locals, cookies: Cookies, url: URL) {
 	const user = requireUser(locals);
 	const db = requireDb('The card builder is not available right now.');
 	const now = requestNow(cookies, TEST_CLOCK);
-	const current = currentMonth({ timezone: user.timezone ?? 'UTC' }, now);
+	const current = currentMonth({ timezone: personOf(user).timezone }, now);
 	const forNext = url.searchParams.get('for') === 'next';
-	if (forNext && !canBuildNextMonth(localDate(now, user.timezone ?? 'UTC'))) redirect(303, '/card');
+	if (forNext && !canBuildNextMonth(localDate(now, personOf(user).timezone)))
+		redirect(303, '/card');
 	const month = forNext ? nextMonth(current) : current;
 	const to = (step?: Step, extra?: string) => {
 		const query = [forNext && 'for=next', extra].filter(Boolean).join('&');
@@ -103,7 +104,7 @@ function startDateOf(
 	now: Date
 ) {
 	if (card && draft.cardId === card.id) return card.startDate;
-	const today = localDate(now, user.timezone ?? 'UTC');
+	const today = localDate(now, personOf(user).timezone);
 	// Next month's card starts on the 1st.
 	return draft.month === monthOf(today) ? today : `${draft.month}-01`;
 }
@@ -374,8 +375,7 @@ export const actions: Actions = {
 
 		const person = {
 			id: user.id,
-			timezone: user.timezone ?? 'UTC',
-			weekStartsOn: user.weekStartsOn === 'sunday' ? ('sunday' as const) : ('monday' as const)
+			...personOf(user)
 		};
 		const plan = {
 			habitIds: draft.habitIds,

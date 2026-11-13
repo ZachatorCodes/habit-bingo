@@ -2,7 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { createInvite, deleteInvite, listInvites } from '#lib/server/auth/invites.ts';
 import { createResetLink } from '#lib/server/auth/password-reset.ts';
-import { requireDb } from '#lib/server/request.ts';
+import { personOf, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Admin is not available right now.';
@@ -46,7 +46,7 @@ function whole(value: string, field: keyof typeof INVITE_LIMITS): number | null 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireAdmin(locals);
 	const db = requireDb(UNAVAILABLE);
-	const timeZone = user.timezone ?? 'UTC';
+	const timeZone = personOf(user).timezone;
 	const formatDate = new Intl.DateTimeFormat('en-GB', {
 		timeZone,
 		day: 'numeric',

@@ -19,7 +19,7 @@ import {
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { retireResetLinks } from '#lib/server/auth/password-reset.ts';
 import { getAuth } from '#lib/server/auth/index.ts';
-import { requireDb } from '#lib/server/request.ts';
+import { personOf, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Your account is not available right now.';
@@ -56,14 +56,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const user = requireUser(locals);
 	const db = requireDb(UNAVAILABLE);
 	const methods = await getSignInMethods(db, user.id);
-	const timezone = user.timezone ?? 'UTC';
+	const timezone = personOf(user).timezone;
 	return {
 		profile: {
 			name: user.name,
 			avatarIcon: user.avatarIcon ?? AVATAR_ICONS[0],
 			displayUsername: user.displayUsername ?? user.username ?? ''
 		},
-		settings: { timezone, weekStartsOn: (user.weekStartsOn ?? 'monday') as WeekStart },
+		settings: { timezone, weekStartsOn: personOf(user).weekStartsOn },
 		timezones: timezoneOptions(timezone),
 		avatars: AVATAR_ICONS,
 		methods,

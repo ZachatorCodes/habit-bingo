@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Icon from './Icon.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
 	import { CATEGORIES, type CategoryId } from '#lib/game/categories.ts';
 
 	type Props = {

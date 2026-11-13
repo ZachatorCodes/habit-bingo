@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Icon from './Icon.svelte';
-	import ProgressRing from './ProgressRing.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import ProgressRing from '#lib/components/ui/ProgressRing.svelte';
 	import { describeRule } from '#lib/game/habit-rules.ts';
 	import { STARTERS } from '#lib/game/starters.ts';
 

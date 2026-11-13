@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Button from '#lib/components/Button.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import Icon from '#lib/components/Icon.svelte';
-	import Seo from '#lib/components/Seo.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

@@ -2,8 +2,8 @@
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
-	import Icon from './Icon.svelte';
-	import ProgressRing from './ProgressRing.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import ProgressRing from '#lib/components/ui/ProgressRing.svelte';
 	import { describeRule } from '#lib/game/habit-rules.ts';
 	import type { Habit } from '#lib/game/types.ts';
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from '#lib/components/Icon.svelte';
+	import Icon from './Icon.svelte';
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	type Props = {

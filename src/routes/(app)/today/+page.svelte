@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from '#lib/components/Icon.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
 	import { enhance } from '$app/forms';
 	import {
 		afterNavigate,
@@ -9,23 +9,23 @@
 		pushState,
 		replaceState
 	} from '$app/navigation';
-	import HabitSheet from '#lib/components/HabitSheet.svelte';
-	import Sheet from '#lib/components/Sheet.svelte';
+	import HabitSheet from '#lib/components/card/HabitSheet.svelte';
+	import Sheet from '#lib/components/ui/Sheet.svelte';
 	import { resolve } from '$app/paths';
 	import Confetti from 'phosphor-svelte/lib/Confetti';
 	import Warning from 'phosphor-svelte/lib/Warning';
-	import Button from '#lib/components/Button.svelte';
-	import CardBoard from '#lib/components/CardBoard.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import DaySwitcher from '#lib/components/DaySwitcher.svelte';
-	import Toast from '#lib/components/Toast.svelte';
-	import BingoCelebration from '#lib/components/BingoCelebration.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import CardBoard from '#lib/components/card/CardBoard.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import DaySwitcher from '#lib/components/today/DaySwitcher.svelte';
+	import Toast from '#lib/components/ui/Toast.svelte';
+	import BingoCelebration from '#lib/components/card/BingoCelebration.svelte';
 	import { newlyCompleted } from '#lib/game/celebrate.ts';
 	import { greeting, todaySummary } from '#lib/game/greeting.ts';
 	import type { CardScore, Tier } from '#lib/game/score.ts';
-	import TodayRow from '#lib/components/TodayRow.svelte';
+	import TodayRow from '#lib/components/today/TodayRow.svelte';
 	import { page } from '$app/state';
-	import Seo from '#lib/components/Seo.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();

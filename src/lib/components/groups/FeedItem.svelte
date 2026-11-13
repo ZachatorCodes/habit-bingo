@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import Icon from '#lib/components/Icon.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
 	import { monthName } from '#lib/game/calendar.ts';
 	import { REACTIONS, type ReactionIcon } from '#lib/game/feed.ts';
 	import type { FeedItem } from '#lib/game/types.ts';

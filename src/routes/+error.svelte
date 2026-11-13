@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import Button from '#lib/components/Button.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import ProgressRing from '#lib/components/ProgressRing.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import ProgressRing from '#lib/components/ui/ProgressRing.svelte';
 
 	const notFound = $derived(page.status === 404);
 </script>

@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Button from '#lib/components/Button.svelte';
-	import CategoryFilter from '#lib/components/CategoryFilter.svelte';
-	import HabitRow from '#lib/components/HabitRow.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import Icon from '#lib/components/Icon.svelte';
-	import Notice from '#lib/components/Notice.svelte';
-	import StarterHabits from '#lib/components/StarterHabits.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import CategoryFilter from '#lib/components/habits/CategoryFilter.svelte';
+	import HabitRow from '#lib/components/habits/HabitRow.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import Notice from '#lib/components/ui/Notice.svelte';
+	import StarterHabits from '#lib/components/builder/StarterHabits.svelte';
 	import { CATEGORIES } from '#lib/game/categories.ts';
 	import { page } from '$app/state';
-	import Seo from '#lib/components/Seo.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();

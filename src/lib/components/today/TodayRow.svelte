@@ -8,7 +8,7 @@
 	import { burst, tap } from '#lib/components/card/celebrate.ts';
 	import Check from 'phosphor-svelte/lib/Check';
 	import Plus from 'phosphor-svelte/lib/Plus';
-	import BingoSquare from './BingoSquare.svelte';
+	import BingoSquare from '#lib/components/card/BingoSquare.svelte';
 
 	type Props = {
 		row: TodayRowData;

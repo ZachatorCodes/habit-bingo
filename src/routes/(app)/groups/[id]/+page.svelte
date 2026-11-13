@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import ConfirmAction from '#lib/components/ConfirmAction.svelte';
-	import CopyField from '#lib/components/CopyField.svelte';
-	import FeedItem from '#lib/components/FeedItem.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import Icon from '#lib/components/Icon.svelte';
-	import Notice from '#lib/components/Notice.svelte';
-	import Seo from '#lib/components/Seo.svelte';
+	import ConfirmAction from '#lib/components/ui/ConfirmAction.svelte';
+	import CopyField from '#lib/components/ui/CopyField.svelte';
+	import FeedItem from '#lib/components/groups/FeedItem.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import Notice from '#lib/components/ui/Notice.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

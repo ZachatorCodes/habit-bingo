@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from '#lib/components/Icon.svelte';
+	import Icon from './Icon.svelte';
 	type Props = {
 		/** A new `id` shows the message (again, even with the same text); it hides after `duration` ms. */
 		message: { id: number; text: string } | null;

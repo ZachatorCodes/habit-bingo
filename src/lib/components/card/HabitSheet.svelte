@@ -9,8 +9,8 @@
 	import { monthName, weekday } from '#lib/game/calendar.ts';
 	import Plus from 'phosphor-svelte/lib/Plus';
 	import MonthCalendar from './MonthCalendar.svelte';
-	import ProgressRing from './ProgressRing.svelte';
-	import Toast from './Toast.svelte';
+	import ProgressRing from '#lib/components/ui/ProgressRing.svelte';
+	import Toast from '#lib/components/ui/Toast.svelte';
 
 	type Props = {
 		data: SheetData;

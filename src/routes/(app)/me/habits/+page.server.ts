@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { CATEGORIES, isCategoryId, type CategoryId } from '#lib/game/categories.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { formText, requireDb } from '#lib/server/request.ts';
 import {
 	addStarter,
 	addedStarterIds,
@@ -11,22 +11,17 @@ import {
 } from '#lib/server/habits.ts';
 import type { Actions, PageServerLoad } from './$types';
 
+const UNAVAILABLE = 'Your habits are not available right now.';
+
 const FULL_MESSAGE = 'You can have up to 100 habits. Archive some to add more.';
 
-function requireDb() {
-	const db = getDb();
-	if (!db) error(503, 'Your habits are not available right now.');
-	return db;
-}
-
 async function habitId(request: Request): Promise<string> {
-	const id = (await request.formData()).get('id');
-	return typeof id === 'string' ? id : '';
+	return formText(await request.formData(), 'id');
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const user = requireUser(locals);
-	const db = requireDb();
+	const db = requireDb(UNAVAILABLE);
 	const requested = url.searchParams.get('category') ?? '';
 	const category: CategoryId | null = isCategoryId(requested) ? requested : null;
 	const archived = url.searchParams.get('archived') === '1';
@@ -58,11 +53,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 export const actions: Actions = {
 	addStarter: async ({ locals, request }) => {
 		const user = requireUser(locals);
-		const starterId = (await request.formData()).get('starterId');
 		const result = await addStarter(
-			requireDb(),
+			requireDb(UNAVAILABLE),
 			user.id,
-			typeof starterId === 'string' ? starterId : ''
+			formText(await request.formData(), 'starterId')
 		);
 		if (!result.ok) return fail(400, { message: result.message });
 		return { addedStarter: result.added };
@@ -70,7 +64,9 @@ export const actions: Actions = {
 
 	archive: async ({ locals, request }) => {
 		const user = requireUser(locals);
-		if (!(await archiveHabit(requireDb(), user.id, await habitId(request), new Date()))) {
+		if (
+			!(await archiveHabit(requireDb(UNAVAILABLE), user.id, await habitId(request), new Date()))
+		) {
 			error(404, 'Not found');
 		}
 		return { archived: true };
@@ -78,7 +74,7 @@ export const actions: Actions = {
 
 	restore: async ({ locals, request }) => {
 		const user = requireUser(locals);
-		const result = await restoreHabit(requireDb(), user.id, await habitId(request));
+		const result = await restoreHabit(requireDb(UNAVAILABLE), user.id, await habitId(request));
 		if (result === false) error(404, 'Not found');
 		if (result === 'full') return fail(400, { message: FULL_MESSAGE });
 		return { restored: true };

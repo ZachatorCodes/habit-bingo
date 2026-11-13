@@ -1,12 +1,11 @@
-import { error, redirect } from '@sveltejs/kit';
-import { TEST_CLOCK } from '$app/env/private';
+import { redirect } from '@sveltejs/kit';
 import { nextMonth } from '#lib/game/calendar.ts';
 import { canBuildNextMonth } from '#lib/game/next-month.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { draftFromCard, getDraft, saveDraft } from '#lib/server/card-drafts.ts';
 import { currentMonth, getCard, isEditable } from '#lib/server/cards.ts';
-import { localDate, requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { localDate } from '#lib/server/clock.ts';
+import { personOf, requestClock, requireDb } from '#lib/server/request.ts';
 import type { PageServerLoad } from './$types';
 
 /**
@@ -15,10 +14,9 @@ import type { PageServerLoad } from './$types';
  */
 export const load: PageServerLoad = async ({ locals, cookies }) => {
 	const user = requireUser(locals);
-	const db = getDb();
-	if (!db) error(503, 'The card builder is not available right now.');
-	const timezone = user.timezone ?? 'UTC';
-	const now = requestNow(cookies, TEST_CLOCK);
+	const db = requireDb('The card builder is not available right now.');
+	const timezone = personOf(user).timezone;
+	const now = requestClock(cookies);
 	if (!canBuildNextMonth(localDate(now, timezone))) redirect(303, '/card');
 	const current = currentMonth({ timezone }, now);
 	const month = nextMonth(current);

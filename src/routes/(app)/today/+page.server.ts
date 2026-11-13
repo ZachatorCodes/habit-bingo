@@ -1,5 +1,4 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { TEST_CLOCK } from '$app/env/private';
 import { backfillDates, backfillMonths } from '#lib/game/backfill.ts';
 import { monthName, monthOf } from '#lib/game/calendar.ts';
 import { CARD_SIZES } from '#lib/game/card-layout.ts';
@@ -11,22 +10,18 @@ import { requireUser } from '#lib/server/auth/guards.ts';
 import { getCard, type Card } from '#lib/server/cards.ts';
 import { cardView } from '#lib/server/card-view.ts';
 import { getCheckIns, logCheckIn, MAX_COUNT } from '#lib/server/check-ins.ts';
-import { localDate, localHour, requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { localDate, localHour } from '#lib/server/clock.ts';
+import { personOf, readForm, requestClock, requireDb } from '#lib/server/request.ts';
 import { finalizeMonths, markSeen, newestUnseen } from '#lib/server/month-results.ts';
 import type { Actions, PageServerLoad } from './$types';
 
-function requireDb() {
-	const db = getDb();
-	if (!db) error(503, 'Today is not available right now.');
-	return db;
-}
+const UNAVAILABLE = 'Today is not available right now.';
 
 export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	const user = requireUser(locals);
-	const db = requireDb();
-	const timezone = user.timezone ?? 'UTC';
-	const now = requestNow(cookies, TEST_CLOCK);
+	const db = requireDb(UNAVAILABLE);
+	const timezone = personOf(user).timezone;
+	const now = requestClock(cookies);
 	const today = localDate(now, timezone);
 	const month = monthOf(today);
 	const name = user.name;
@@ -131,18 +126,14 @@ async function log(
 	delta: 1 | -1
 ) {
 	const user = requireUser(locals);
-	const data = await request.formData();
-	const field = (name: string) => {
-		const value = data.get(name);
-		return typeof value === 'string' ? value : '';
-	};
+	const field = await readForm(request);
 	const result = await logCheckIn(
-		requireDb(),
-		{ id: user.id, timezone: user.timezone ?? 'UTC' },
+		requireDb(UNAVAILABLE),
+		{ id: user.id, timezone: personOf(user).timezone },
 		field('squareId'),
 		field('date'),
 		delta,
-		requestNow(cookies, TEST_CLOCK)
+		requestClock(cookies)
 	);
 	if (result === null) error(404, 'Not found');
 	if (!result.ok) return fail(400, { message: result.message });
@@ -158,7 +149,7 @@ export const actions: Actions = {
 		const user = requireUser(locals);
 		const month = (await request.formData()).get('month');
 		if (typeof month === 'string') {
-			await markSeen(requireDb(), user.id, month, requestNow(cookies, TEST_CLOCK));
+			await markSeen(requireDb(UNAVAILABLE), user.id, month, requestClock(cookies));
 		}
 		const day = url.searchParams.get('day');
 		redirect(303, day ? `/today?day=${encodeURIComponent(day)}` : '/today');

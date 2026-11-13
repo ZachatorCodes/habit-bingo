@@ -1,22 +1,22 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { daysLeftInMonth, monthName } from '#lib/game/calendar.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { draftFromCard, getDraft, saveDraft } from '#lib/server/card-drafts.ts';
 import { currentMonth, getCard, isEditable } from '#lib/server/cards.ts';
-import { TEST_CLOCK } from '$app/env/private';
 import { cardView } from '#lib/server/card-view.ts';
-import { formatEditDeadline, localDate, requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { formatEditDeadline, localDate } from '#lib/server/clock.ts';
+import { personOf, requestClock, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
+
+const UNAVAILABLE = 'Your card is not available right now.';
 
 export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	const user = requireUser(locals);
 	// The habit sheet asks for a fresh copy with ?refresh=…; reading it makes SvelteKit rerun this load.
 	void url.searchParams.get('refresh');
-	const db = getDb();
-	if (!db) error(503, 'Your card is not available right now.');
-	const timezone = user.timezone ?? 'UTC';
-	const now = requestNow(cookies, TEST_CLOCK);
+	const db = requireDb(UNAVAILABLE);
+	const timezone = personOf(user).timezone;
+	const now = requestClock(cookies);
 	const month = currentMonth({ timezone }, now);
 	const [card, draft] = await Promise.all([
 		getCard(db, user.id, month),
@@ -56,13 +56,12 @@ export const actions: Actions = {
 	/** Reopens the builder on the started card, while the 48 hours last. */
 	edit: async ({ locals, cookies }) => {
 		const user = requireUser(locals);
-		const db = getDb();
-		if (!db) error(503, 'Your card is not available right now.');
-		const now = requestNow(cookies, TEST_CLOCK);
+		const db = requireDb(UNAVAILABLE);
+		const now = requestClock(cookies);
 		const card = await getCard(
 			db,
 			user.id,
-			currentMonth({ timezone: user.timezone ?? 'UTC' }, now)
+			currentMonth({ timezone: personOf(user).timezone }, now)
 		);
 		if (!card) redirect(303, '/card/build');
 		if (!isEditable(card, now)) return fail(400, { message: 'This card is locked.' });

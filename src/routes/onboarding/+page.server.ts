@@ -1,9 +1,9 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { AVATAR_ICONS } from '#lib/icons.ts';
 import { isValidTimezone, type WeekStart } from '#lib/profile.ts';
 import { completeOnboarding } from '#lib/server/auth/accounts.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { readForm, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 type Field = 'username' | 'name' | 'avatarIcon' | 'timezone' | 'weekStartsOn' | 'form';
@@ -27,14 +27,9 @@ export const actions: Actions = {
 	default: async ({ request, locals }) => {
 		const user = requireUser(locals);
 		if (user.onboardedAt) redirect(303, '/today');
-		const db = getDb();
-		if (!db) error(503, 'Onboarding is not available right now.');
+		const db = requireDb('Onboarding is not available right now.');
 
-		const formData = await request.formData();
-		const text = (key: string) => {
-			const value = formData.get(key);
-			return typeof value === 'string' ? value : '';
-		};
+		const text = await readForm(request);
 		const values = {
 			username: text('username'),
 			name: text('name'),

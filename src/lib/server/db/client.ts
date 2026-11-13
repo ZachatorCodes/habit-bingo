@@ -3,6 +3,7 @@ import pg from 'pg';
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import { DATABASE_URL } from '$app/env/private';
 import * as schema from './schema';
+import { log } from '../log.ts';
 
 /** The database handle every service takes. Postgres via node-postgres in production and E2E, PGlite in unit tests. */
 export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
@@ -16,7 +17,7 @@ export function createDb(url: string, poolSize = 5): Db {
 	// An idle pooled client can fail when Neon suspends compute or drops the socket.
 	// Unhandled, that 'error' event would crash the whole function instance.
 	pool.on('error', (error: Error) =>
-		console.error(JSON.stringify({ level: 'error', source: 'db-pool', message: error.message }))
+		log({ level: 'error', source: 'db-pool', message: error.message })
 	);
 	return drizzle(pool, { schema });
 }

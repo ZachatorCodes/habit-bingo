@@ -1,6 +1,6 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { requireUser } from '#lib/server/auth/guards.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import { DEFAULT_HABIT_INPUT, libraryUrl, readHabitForm } from '#lib/server/habit-form.ts';
 import { createHabit } from '#lib/server/habits.ts';
 import type { Actions, PageServerLoad } from './$types';
@@ -13,8 +13,7 @@ export const load: PageServerLoad = ({ locals }) => {
 export const actions: Actions = {
 	default: async ({ locals, request }) => {
 		const user = requireUser(locals);
-		const db = getDb();
-		if (!db) error(503, 'Your habits are not available right now.');
+		const db = requireDb('Your habits are not available right now.');
 		const values = await readHabitForm(request);
 		const result = await createHabit(db, user.id, values);
 		if (!result.ok) {

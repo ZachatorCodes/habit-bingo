@@ -1,5 +1,4 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { TEST_CLOCK } from '$app/env/private';
 import { addDays, lastDayOf, monthOf } from '#lib/game/calendar.ts';
 import { backfillMonths, canLog, loggableDates } from '#lib/game/backfill.ts';
 import { CATEGORIES } from '#lib/game/categories.ts';
@@ -11,22 +10,18 @@ import type { SheetData } from '#lib/components/HabitSheet.svelte';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { getCard } from '#lib/server/cards.ts';
 import { getCheckIns, logCheckIn, setCheckIn } from '#lib/server/check-ins.ts';
-import { localDate, requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { localDate } from '#lib/server/clock.ts';
+import { personOf, requestClock, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
-function requireDb() {
-	const db = getDb();
-	if (!db) error(503, 'Your card is not available right now.');
-	return db;
-}
+const UNAVAILABLE = 'Your card is not available right now.';
 
 /** One square of the person's current card, as the habit sheet shows it (spec §4.6). */
 export const load: PageServerLoad = async ({ locals, cookies, params, url }) => {
 	const user = requireUser(locals);
-	const db = requireDb();
-	const timezone = user.timezone ?? 'UTC';
-	const now = requestNow(cookies, TEST_CLOCK);
+	const db = requireDb(UNAVAILABLE);
+	const timezone = personOf(user).timezone;
+	const now = requestClock(cookies);
 	const today = localDate(now, timezone);
 	// This month's card, and on the 1st–3rd last month's too (its days are still open).
 	let card: Awaited<ReturnType<typeof getCard>> = null;
@@ -79,12 +74,26 @@ async function change(
 	const user = requireUser(locals);
 	const data = await request.formData();
 	const date = String(data.get('date') ?? '');
-	const person = { id: user.id, timezone: user.timezone ?? 'UTC' };
-	const now = requestNow(cookies, TEST_CLOCK);
+	const person = { id: user.id, timezone: personOf(user).timezone };
+	const now = requestClock(cookies);
 	const result =
 		how === 'set'
-			? await setCheckIn(requireDb(), person, params.id, date, Number(data.get('count')), now)
-			: await logCheckIn(requireDb(), person, params.id, date, how === 'log' ? 1 : -1, now);
+			? await setCheckIn(
+					requireDb(UNAVAILABLE),
+					person,
+					params.id,
+					date,
+					Number(data.get('count')),
+					now
+				)
+			: await logCheckIn(
+					requireDb(UNAVAILABLE),
+					person,
+					params.id,
+					date,
+					how === 'log' ? 1 : -1,
+					now
+				);
 	if (result === null) error(404, 'Not found');
 	if (!result.ok) return fail(400, { message: result.message });
 	// Back to the sheet for that day, so a refresh never posts again.

@@ -13,18 +13,13 @@ import {
 	signInWithPassword,
 	WRONG_CREDENTIALS_MESSAGE
 } from '#lib/server/auth/sign-in.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { formText, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 type Field = 'username' | 'password' | 'form';
 
 /** Longer than any real username; longer input is refused before it reaches the database. */
 const MAX_USERNAME_INPUT = 64;
-
-function stringField(formData: FormData, key: string): string {
-	const value = formData.get(key);
-	return typeof value === 'string' ? value : '';
-}
 
 const googleEnabled = () => Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
 
@@ -42,14 +37,14 @@ export const load: PageServerLoad = ({ url, locals }) => {
 
 export const actions: Actions = {
 	google: async ({ request, locals }) => {
-		const next = safeNextPath(stringField(await request.formData(), 'next'));
+		const next = safeNextPath(formText(await request.formData(), 'next'));
 		if (locals.user) redirect(303, next);
 		if (!googleEnabled()) error(404, 'Google sign-in is not available.');
 		redirectToGoogle(await startGoogleSignIn(getAuth(), request.headers, next));
 	},
 	signin: async ({ request, locals, getClientAddress }) => {
 		const formData = await request.formData();
-		const text = (key: string) => stringField(formData, key);
+		const text = (key: string) => formText(formData, key);
 		const next = safeNextPath(text('next'));
 		if (locals.user) redirect(303, next);
 
@@ -61,8 +56,7 @@ export const actions: Actions = {
 		const failWith = (errors: Partial<Record<Field, string>>, status = 400) =>
 			fail(status, { values, errors });
 
-		const db = getDb();
-		if (!db) error(503, 'Sign-in is not available right now.');
+		const db = requireDb('Sign-in is not available right now.');
 		// Per-IP limit first, so a blocked client never reaches Better Auth or the username lockout.
 		const ipAllowed = await checkAndRecordIp(
 			db,

@@ -2,7 +2,6 @@ import { error, fail, redirect, type Cookies } from '@sveltejs/kit';
 import * as z from 'zod';
 import {
 	BOOTSTRAP_INVITE_CODE,
-	TEST_CLOCK,
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
 	IP_LIMIT_MULTIPLIER
@@ -14,8 +13,8 @@ import { getJoinStatus } from '#lib/server/auth/invites.ts';
 import { checkAndRecordIp, TOO_MANY_ATTEMPTS_MESSAGE } from '#lib/server/auth/ip-limit.ts';
 import { checkPassword, PASSWORD_MESSAGES } from '#lib/server/auth/password-policy.ts';
 import { signUpWithPassword, USERNAME_RULES_MESSAGE } from '#lib/server/auth/sign-up.ts';
-import { requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+
+import { formText, requestClock, requireDb } from '#lib/server/request.ts';
 import { DEAD_LINK_MESSAGE, getMembership, groupForInvite, joinGroup } from '#lib/server/groups.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -56,10 +55,9 @@ function setInviteCookie(cookies: Cookies, code: string) {
 }
 
 export const load: PageServerLoad = async ({ params, cookies, locals }) => {
-	const db = getDb();
-	if (!db) error(503, 'Sign-up is not available right now.');
+	const db = requireDb('Sign-up is not available right now.');
 	if (locals.user) {
-		const now = requestNow(cookies, TEST_CLOCK);
+		const now = requestClock(cookies);
 		const found = await groupForInvite(db, params.code, now);
 		if (!found) redirect(303, '/today');
 		if (found === 'dead') return { status: 'groupDead' as const, message: DEAD_LINK_MESSAGE };
@@ -78,22 +76,15 @@ export const load: PageServerLoad = async ({ params, cookies, locals }) => {
 export const actions: Actions = {
 	join: async ({ params, cookies, locals }) => {
 		if (!locals.user) redirect(303, `/signin?next=${encodeURIComponent(`/join/${params.code}`)}`);
-		const db = getDb();
-		if (!db) error(503, 'Groups are not available right now.');
-		const result = await joinGroup(
-			db,
-			locals.user.id,
-			params.code,
-			requestNow(cookies, TEST_CLOCK)
-		);
+		const db = requireDb('Groups are not available right now.');
+		const result = await joinGroup(db, locals.user.id, params.code, requestClock(cookies));
 		if (!result.ok) return fail(400, { message: result.message });
 		redirect(303, `/groups/${result.groupId}`);
 	},
 	google: async ({ params, request, cookies, locals }) => {
 		if (locals.user) redirect(303, '/today');
 		if (!googleEnabled()) error(404, 'Google sign-in is not available.');
-		const db = getDb();
-		if (!db) error(503, 'Sign-up is not available right now.');
+		const db = requireDb('Sign-up is not available right now.');
 
 		// The invite may have expired or been used up since the page loaded. Returning re-runs load,
 		// which shows the dead-invite page (Review Focus 3).
@@ -108,15 +99,11 @@ export const actions: Actions = {
 	signup: async ({ request, cookies, locals, getClientAddress }) => {
 		if (locals.user) redirect(303, '/today');
 		const formData = await request.formData();
-		const text = (key: string) => {
-			const value = formData.get(key);
-			return typeof value === 'string' ? value : '';
-		};
+		const text = (key: string) => formText(formData, key);
 		// Echoed back on errors so nobody retypes them. Never the password.
 		const values = { username: text('username'), name: text('name') };
 
-		const db = getDb();
-		if (!db) error(503, 'Sign-up is not available right now.');
+		const db = requireDb('Sign-up is not available right now.');
 		const ipAllowed = await checkAndRecordIp(
 			db,
 			'signup',

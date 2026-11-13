@@ -25,8 +25,7 @@ import {
 	type CardDraft,
 	type Step
 } from '#lib/server/card-drafts.ts';
-import { TEST_CLOCK } from '$app/env/private';
-import { localDate, requestNow } from '#lib/server/clock.ts';
+import { localDate } from '#lib/server/clock.ts';
 import {
 	currentMonth,
 	editBlocked,
@@ -36,7 +35,8 @@ import {
 	validateRewards,
 	type Card
 } from '#lib/server/cards.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import type { Db } from '#lib/server/db/client.ts';
+import { formText, personOf, readForm, requestClock, requireDb } from '#lib/server/request.ts';
 import { DEFAULT_HABIT_INPUT, readHabitForm } from '#lib/server/habit-form.ts';
 import { createHabit, listHabits, type Habit } from '#lib/server/habits.ts';
 import type { SquareState } from '#lib/game/square-state.ts';
@@ -53,12 +53,12 @@ function isStep(value: string): value is Step {
  */
 async function builderContext(locals: App.Locals, cookies: Cookies, url: URL) {
 	const user = requireUser(locals);
-	const db = getDb();
-	if (!db) error(503, 'The card builder is not available right now.');
-	const now = requestNow(cookies, TEST_CLOCK);
-	const current = currentMonth({ timezone: user.timezone ?? 'UTC' }, now);
+	const db = requireDb('The card builder is not available right now.');
+	const now = requestClock(cookies);
+	const current = currentMonth({ timezone: personOf(user).timezone }, now);
 	const forNext = url.searchParams.get('for') === 'next';
-	if (forNext && !canBuildNextMonth(localDate(now, user.timezone ?? 'UTC'))) redirect(303, '/card');
+	if (forNext && !canBuildNextMonth(localDate(now, personOf(user).timezone)))
+		redirect(303, '/card');
 	const month = forNext ? nextMonth(current) : current;
 	const to = (step?: Step, extra?: string) => {
 		const query = [forNext && 'for=next', extra].filter(Boolean).join('&');
@@ -103,7 +103,7 @@ function startDateOf(
 	now: Date
 ) {
 	if (card && draft.cardId === card.id) return card.startDate;
-	const today = localDate(now, user.timezone ?? 'UTC');
+	const today = localDate(now, personOf(user).timezone);
 	// Next month's card starts on the 1st.
 	return draft.month === monthOf(today) ? today : `${draft.month}-01`;
 }
@@ -131,7 +131,7 @@ function keptSquares(card: Card | null) {
  * it was picked leaves the set short, so the person is sent back to re-pick.
  */
 async function pickedHabits(
-	db: NonNullable<ReturnType<typeof getDb>>,
+	db: Db,
 	userId: string,
 	draft: CardDraft,
 	size: CardSize,
@@ -310,8 +310,7 @@ export const actions: Actions = {
 		const targets: Record<string, number> = {};
 		for (const habit of picked) {
 			const field = `target:${habit.id}`;
-			const raw = form.get(field);
-			const text = typeof raw === 'string' ? raw.trim() : '';
+			const text = formText(form, field).trim();
 			values[field] = text;
 			const { min, max } = targetRange(habit.direction, habit.period, habit.countMode);
 			const number = Number(text);
@@ -337,11 +336,7 @@ export const actions: Actions = {
 		if (size === null) redirect(303, to('size'));
 		await pickedHabits(db, user.id, draft, size, keptSquares(card), to('habits'));
 
-		const form = await request.formData();
-		const text = (name: string) => {
-			const raw = form.get(name);
-			return typeof raw === 'string' ? raw : '';
-		};
+		const text = await readForm(request);
 		const typed = { bingo: text('bingo'), sixty: text('sixty'), blackout: text('blackout') };
 		const result = validateRewards(typed);
 		if (!result.ok) {
@@ -374,8 +369,7 @@ export const actions: Actions = {
 
 		const person = {
 			id: user.id,
-			timezone: user.timezone ?? 'UTC',
-			weekStartsOn: user.weekStartsOn === 'sunday' ? ('sunday' as const) : ('monday' as const)
+			...personOf(user)
 		};
 		const plan = {
 			habitIds: draft.habitIds,

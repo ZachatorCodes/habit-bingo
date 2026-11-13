@@ -37,5 +37,59 @@ export default defineConfig(
 		// Override or add rule settings here, such as:
 		// 'svelte/button-has-type': 'error'
 		rules: {}
+	},
+	// Layer boundaries (docs/adr/0007-layering-and-boundaries.md).
+	{
+		files: ['src/lib/game/**'],
+		rules: {
+			'@typescript-eslint/no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: ['$app/*', '@sveltejs/kit', '@sveltejs/kit/*', 'drizzle-orm', 'drizzle-orm/*'],
+							message: 'lib/game is pure: no SvelteKit or database imports.'
+						},
+						{
+							group: [
+								'#lib/server',
+								'#lib/server/*',
+								'$lib/server',
+								'$lib/server/*',
+								'**/server/**'
+							],
+							message: 'lib/game may not import lib/server.'
+						},
+						{
+							group: ['#lib/components/*', '$lib/components/*', '**/components/**', '*.svelte'],
+							message: 'lib/game may not import components.'
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		files: ['src/lib/components/**'],
+		rules: {
+			'@typescript-eslint/no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: [
+								'#lib/server',
+								'#lib/server/*',
+								'$lib/server',
+								'$lib/server/*',
+								'**/server/**'
+							],
+							message:
+								'Components may not import lib/server; shared types live in lib/game/types.ts.'
+						}
+					]
+				}
+			]
+		}
 	}
 );

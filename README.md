@@ -15,19 +15,18 @@ race your friends up the group leaderboard.
   "at least 3 times a month", "8 times a day", "2 days a week" or "at most 3 days a month".
   Mark any habit private and friends only ever see "a private habit". A Quick start list gets new
   players going.
-- **Monthly bingo cards.** Build a 3×3 (8 habits, 1× points) or 5×5 (24 habits, 2× points) card in
-  five steps: size, habits, targets, rewards and board. Starting mid-month shortens monthly targets
+- **Monthly bingo cards.** Build a 3×3 (8 habits) or 5×5 (24 habits) card in five steps: size, habits, targets, rewards and board. Starting mid-month shortens monthly targets
   to the days left. You can edit a card for 48 hours after starting it.
-- **Squares you earn and squares you protect.**
-  - **Monthly goals** fill up as you log and count once complete.
-  - **Every-day and every-week habits** count once you meet a first day (or week) and keep
-    counting while you keep up. Miss a day and the square turns at risk; once the miss is more
-    than 3 days old the square is lost until you log that day.
-  - **"At most" limits** stay safe while you stay under, and count when the month ends.
-- **Rewards.** Set three real-life treats for your first bingo, for reaching 60% of your squares,
-  and for a blackout. A celebration reveals each one as you reach it.
+- **Squares you earn and squares you protect.** A square helps a bingo only once it is done:
+  - **Monthly goals** fill up as you log and count as soon as they are complete.
+  - **Every-day and every-week habits** count at the end of the month if you keep them up. Miss a
+    day and the square turns at risk; once the miss is more than 3 days old the square is lost
+    until you log that day.
+  - **"At most" limits** stay safe while you stay under, and count at the end of the month.
+- **Rewards.** Set three real-life treats: one for your first bingo, one for 5 counting squares (12 on
+  a 5×5), and one for a blackout. A celebration reveals each one as you reach it.
 - **Today.** Today's check-ins in one list, with day chips to catch up on the last few days and
-  nudges for what needs doing.
+  nudges for what needs doing, including how close you are to a bingo or reward if you keep it up.
 - **Log any day of the month.** Every habit opens a sheet with a month calendar, so a day you forgot
   can still be logged later, up to today.
 - **Groups.** Invite friends with a link. Each group has:
@@ -52,11 +51,20 @@ race your friends up the group leaderboard.
    habit and pick the day on its calendar.
 5. **Play with friends.** Create a group under **Groups**, share its invite link, and react to each
    other's progress in the feed.
-6. **Finish the month.** Go for lines, the 60% reward and the blackout. Build next month's card by
+6. **Finish the month.** Go for lines, the squares reward and the blackout. Build next month's card by
    the 3rd to complete the last center square.
 
-Points: each square is worth up to 10 points by its progress, plus 25 per complete line and 100 for
-a blackout. Multiply by 2 on a 5×5 card.
+### Points
+
+- **Every habit square is worth up to 10 points,** earned as you go:
+  - **monthly goals:** by progress toward the target;
+  - **every-day and every-week habits:** by the days or weeks met;
+  - **limits of 0 and daily limits:** a share for each finished day you stay within them (a slip
+    day earns nothing, and the clean days are kept);
+  - **other limits:** 10 at month end if you stayed under.
+- **+25 per complete line and +100 for a blackout.**
+- **Both card sizes score the same:** at most 380 on a 3×3 and 640 on a 5×5.
+- **The card's "% complete"** is your average progress across its squares.
 
 ## Stack
 

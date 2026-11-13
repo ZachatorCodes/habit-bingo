@@ -1,5 +1,11 @@
 import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
-import { REACTIONS, type highlightChanges, type ReactionIcon } from '#lib/game/feed.ts';
+import {
+	REACTIONS,
+	type HighlightState,
+	type highlightChanges,
+	type ReactionIcon
+} from '#lib/game/feed.ts';
+import { CARD_SIZES, type CardSize } from '#lib/game/card-layout.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { feedEvent, groupMember, reaction, user } from '#lib/server/db/schema.ts';
 import type { FeedEventType } from '#lib/server/db/schema/feed.ts';
@@ -44,17 +50,30 @@ export async function postCardStarted(
 		.onConflictDoNothing();
 }
 
+/**
+ * Compare against this to post every highlight true now: rewards a card reaches as the month ends
+ * arrive with no check-in, so each sync posts what is missing (inserts are idempotent).
+ */
+export const NOTHING_POSTED: HighlightState = { squares: [], tiers: [] };
+
 /** Applies `highlightChanges` output: inserts are idempotent, removals take reactions with them. */
 export async function syncHighlights(
 	tx: Db,
-	card: { id: string; userId: string },
+	card: { id: string; userId: string; size: CardSize },
 	squares: { id: string; name: string | null; icon: string | null; isPrivate: boolean | null }[],
 	changes: ReturnType<typeof highlightChanges>
 ): Promise<void> {
 	if (changes.remove.length) {
+		// Reward highlights posted before the 2026-11 points rules carry no `rules` mark: keep them.
 		await tx
 			.delete(feedEvent)
-			.where(and(eq(feedEvent.cardId, card.id), inArray(feedEvent.key, changes.remove)));
+			.where(
+				and(
+					eq(feedEvent.cardId, card.id),
+					inArray(feedEvent.key, changes.remove),
+					or(sql`${feedEvent.key} not like 'tier:%'`, sql`${feedEvent.payload}->>'rules' = '2'`)
+				)
+			);
 	}
 	const now = new Date();
 	for (const key of changes.post) {
@@ -68,7 +87,9 @@ export async function syncHighlights(
 				type: typeOf(key),
 				key,
 				payload: !square
-					? {}
+					? key === 'tier:sixtyPercent'
+						? { squares: CARD_SIZES[card.size].sixtyThreshold, rules: 2 }
+						: { rules: 2 }
 					: square.isPrivate
 						? { private: true }
 						: { name: square.name, icon: square.icon },

@@ -42,6 +42,14 @@ async function squareNames(page: Page): Promise<string[]> {
 		.evaluateAll((els) => els.map((el) => el.getAttribute('aria-label') ?? ''));
 }
 
+test('card sizes carry no points multiplier', async ({ page }) => {
+	await newMemberWithHabits(page, 8);
+	await page.goto('/card/build');
+	await expect(page.getByText('8 habits', { exact: true })).toBeVisible();
+	await expect(page.getByText('24 habits', { exact: true })).toBeVisible();
+	await expect(page.getByText(/× points/)).toHaveCount(0);
+});
+
 test('a new card starts with 0 pts and no bingo', async ({ page }) => {
 	await newMemberWithHabits(page, 8);
 	await setClock(page, '2026-11-10T12:00:00Z');
@@ -389,7 +397,7 @@ test('5×5 names show on a phone', async ({ page, baseURL }) => {
 	await expect(page).toHaveURL(/\/card\/build\/rewards$/);
 	await waitForHydration(page);
 	await page.getByLabel('First bingo').fill('Ice cream');
-	await page.getByLabel('15 squares').fill('Movie night');
+	await page.getByLabel('12 squares').fill('Movie night');
 	await page.getByLabel('Blackout').fill('A weekend away');
 	await page.getByRole('button', { name: 'Continue' }).click();
 	await expect(page).toHaveURL(/\/card\/build\/board$/);

@@ -32,13 +32,19 @@
 		},
 		{ tier: 'blackout', label: 'Blackout', reward: rewards.blackout }
 	]);
-	const toLine = $derived(squaresToLine(size, states, counting));
+	// On track: counts now, or a protected / at-risk habit that counts at month end if kept up.
+	const onTrack = $derived(
+		states.map((state, i) => counting[i] || state === 'held' || state === 'atRisk')
+	);
+	const toLine = $derived(squaresToLine(size, states, onTrack));
 	const lineText = $derived(
-		toLine === null
-			? 'No lines left this month'
-			: toLine === 0
-				? 'Bingo!'
-				: `${toLine} ${toLine === 1 ? 'square' : 'squares'} from a line`
+		squaresToLine(size, states, counting) === 0
+			? 'Bingo!'
+			: toLine === null
+				? 'No lines left this month'
+				: toLine === 0
+					? 'On track for a bingo'
+					: `${toLine} ${toLine === 1 ? 'square' : 'squares'} from a line`
 	);
 	const next = $derived(nextTier(score.tiers));
 	const nextReward = $derived(
@@ -69,7 +75,7 @@
 		</div>
 
 		<div class="flex flex-col lg:col-start-2 lg:row-start-2">
-			<p class="mb-1 text-xs font-extrabold tracking-[0.02em]">{score.percent}% counting</p>
+			<p class="mb-1 text-xs font-extrabold tracking-[0.02em]">{score.percent}% complete</p>
 			<ul aria-label="Rewards" class="flex flex-col divide-y divide-line">
 				{#each tiers as { tier, label, reward } (tier)}
 					<li class="flex items-baseline justify-between gap-3 py-2 text-sm">

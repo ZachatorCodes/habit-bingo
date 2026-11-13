@@ -32,14 +32,14 @@ const props = (overrides: { states?: SquareState[] } & Record<string, unknown> =
 };
 
 describe('CardHeader', () => {
-	it('shows the month, days left, points and percent counting', async () => {
+	it('shows the month, days left, points and percent complete', async () => {
 		render(CardHeader, props());
 		await expect
 			.element(page.getByRole('heading', { level: 1, name: 'October card' }))
 			.toBeVisible();
 		await expect.element(page.getByText('14 days left')).toBeVisible();
 		await expect.element(page.getByText('120pts')).toBeVisible();
-		await expect.element(page.getByText('44% counting')).toBeVisible();
+		await expect.element(page.getByText('44% complete')).toBeVisible();
 	});
 
 	it('uses the singular day', async () => {
@@ -64,6 +64,23 @@ describe('CardHeader', () => {
 		await expect.element(page.getByText('No lines left this month')).toBeVisible();
 	});
 
+	it('counts on-track squares toward a line, without calling it a bingo', async () => {
+		// The middle row: two protected habits that count at month end, and the Free center.
+		const states: SquareState[] = [...base.states];
+		states[3] = 'held';
+		states[5] = 'atRisk';
+		const onTrack = render(
+			CardHeader,
+			props({ states, counting: states.map((s) => s === 'free') })
+		);
+		await expect.element(page.getByText('On track for a bingo')).toBeVisible();
+		expect(page.getByText('Bingo!').elements()).toHaveLength(0);
+		await onTrack.unmount();
+		states[5] = 'empty';
+		render(CardHeader, props({ states, counting: states.map((s) => s === 'free') }));
+		await expect.element(page.getByText('1 square from a line')).toBeVisible();
+	});
+
 	it('uses a singular square and hides the next reward once all are reached', async () => {
 		render(
 			CardHeader,
@@ -81,7 +98,7 @@ describe('CardHeader', () => {
 		const tiers = page.getByRole('list', { name: 'Rewards' }).getByRole('listitem');
 		expect(tiers.elements().map((li) => li.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
 			'Bingo Ice cream Reached',
-			'15 squares Movie night',
+			'12 squares Movie night',
 			'Blackout A weekend away'
 		]);
 	});

@@ -308,6 +308,51 @@ describe('feed highlights', () => {
 		expect(await keys(card.id)).not.toContain('tier:bingo');
 	});
 
+	it('the middle reward stores its square count', async () => {
+		const me = await makeUser();
+		const card = await cardFor(me, await makeHabits(me.id, 8, monthly), OCT_1);
+		for (const i of [0, 1, 2, 3]) {
+			await logCheckIn(db, me, habitSquare(card, i).id, '2026-10-20', 1, OCT_20);
+		}
+		const [tier] = await db
+			.select({ payload: feedEvent.payload })
+			.from(feedEvent)
+			.where(and(eq(feedEvent.cardId, card.id), eq(feedEvent.key, 'tier:sixtyPercent')));
+		expect(tier.payload).toEqual({ squares: 5, rules: 2 });
+	});
+
+	it('a reward reached by the month ending posts on the next check-in', async () => {
+		const me = await makeUser();
+		const limits = { direction: 'atMost', period: 'month', countMode: 'days', target: 3 };
+		const card = await cardFor(me, await makeHabits(me.id, 8, limits), OCT_1);
+		const NOV_1 = new Date('2026-11-01T09:00:00Z');
+		await logCheckIn(db, me, habitSquare(card).id, '2026-10-31', 1, NOV_1);
+		expect(await keys(card.id)).toEqual(
+			expect.arrayContaining(['tier:bingo', 'tier:sixtyPercent'])
+		);
+	});
+
+	it('reward highlights from before the rules changed are kept; new ones follow the card', async () => {
+		const me = await makeUser();
+		const card = await cardFor(me, await makeHabits(me.id, 8), OCT_1);
+		const tier = (key: string, payload: Record<string, unknown>) => ({
+			id: crypto.randomUUID(),
+			userId: me.id,
+			cardId: card.id,
+			type: key.slice('tier:'.length) as 'bingo' | 'blackout',
+			key,
+			payload,
+			createdAt: new Date()
+		});
+		await db
+			.insert(feedEvent)
+			.values([tier('tier:bingo', {}), tier('tier:blackout', { rules: 2 })]);
+		await logCheckIn(db, me, habitSquare(card).id, '2026-10-20', 1, OCT_20);
+		const left = await keys(card.id);
+		expect(left).toContain('tier:bingo');
+		expect(left).not.toContain('tier:blackout');
+	});
+
 	it('simultaneous logs post one bingo', async () => {
 		const me = await makeUser();
 		const card = await cardFor(me, await makeHabits(me.id, 8, monthly), OCT_1);

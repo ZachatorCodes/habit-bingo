@@ -58,6 +58,7 @@ export const load: PageServerLoad = async ({ locals, cookies, params, url }) => 
 		category: category.label,
 		rule: describeRule(square),
 		countMode: square.period === 'day' ? 'times' : square.countMode,
+		period: square.period,
 		state,
 		progress,
 		counting,

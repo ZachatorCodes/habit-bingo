@@ -7,8 +7,9 @@ describe('SizePicker', () => {
 	it('shows need versus have and how many to add', async () => {
 		render(SizePicker, { selected: null, habitCount: 8 });
 		expect(page.getByRole('radio').elements()).toHaveLength(2);
-		await expect.element(page.getByText('8 habits · 1× points')).toBeInTheDocument();
-		await expect.element(page.getByText('24 habits · 2× points')).toBeInTheDocument();
+		await expect.element(page.getByText('8 habits', { exact: true })).toBeInTheDocument();
+		await expect.element(page.getByText('24 habits', { exact: true })).toBeInTheDocument();
+		expect(page.getByText(/× points/).elements()).toHaveLength(0);
 		await expect.element(page.getByText('You have 8 habits / need 8')).toBeInTheDocument();
 		await expect.element(page.getByText('You have 8 habits / need 24')).toBeInTheDocument();
 		await expect.element(page.getByText('Add 16 more in the next step.')).toBeInTheDocument();

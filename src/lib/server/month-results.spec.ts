@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CARD_SIZES } from '#lib/game/card-layout.ts';
 import type { Db } from '#lib/server/db/client.ts';
-import { monthResult, user } from '#lib/server/db/schema.ts';
+import { feedEvent, monthResult, user } from '#lib/server/db/schema.ts';
+import { eq } from 'drizzle-orm';
 import { createTestDb } from '#lib/server/db/test-db.ts';
 import { cardView } from './card-view.ts';
 import { startCard, type Card, type CardPlan } from './cards.ts';
@@ -131,6 +132,24 @@ describe('finalizeMonths', () => {
 		// The recap's board agrees with the saved result.
 		const { squares } = await cardView(db, away.id, october, '2026-11-05');
 		expect(squares[CARD_SIZES[3].centerPosition].state).toBe('buildNext');
+	});
+
+	it('finalizing posts the rewards the month ended with', async () => {
+		const me = await makeUser();
+		const card = await cardFor(me, OCT_1, {
+			direction: 'atMost',
+			period: 'month',
+			countMode: 'days',
+			target: 3
+		});
+		await finalizeMonths(db, me.id, '2026-11-04');
+		const posted = await db
+			.select({ key: feedEvent.key })
+			.from(feedEvent)
+			.where(eq(feedEvent.cardId, card.id));
+		expect(posted.map((e) => e.key)).toEqual(
+			expect.arrayContaining(['tier:bingo', 'tier:sixtyPercent'])
+		);
 	});
 
 	it('two at once save one result', async () => {

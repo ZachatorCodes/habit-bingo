@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { TEST_CLOCK } from '$app/env/private';
 import { monthName } from '#lib/game/calendar.ts';
-import { CARD_SIZES, type CardSize } from '#lib/game/card-layout.ts';
+import { middleReward, type CardSize } from '#lib/game/card-layout.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { localDate, requestNow } from '#lib/server/clock.ts';
 import { getDb } from '#lib/server/db/client.ts';
@@ -18,10 +18,9 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 	const results = await listResults(db, user.id);
 	return {
 		months: results.map((result) => {
-			const { sixtyThreshold } = CARD_SIZES[result.size as CardSize];
 			const labels = {
 				bingo: 'Bingo',
-				sixtyPercent: `${sixtyThreshold} squares`,
+				sixtyPercent: `${middleReward(result.size as CardSize, result.month)} squares`,
 				blackout: 'Blackout'
 			};
 			return {

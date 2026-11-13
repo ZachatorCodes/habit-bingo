@@ -35,7 +35,7 @@ async function makeCard(userId: string) {
 		rewardSixty: 'b',
 		rewardBlackout: 'c'
 	});
-	return { id, userId, month: '2026-10' };
+	return { id, userId, month: '2026-10', size: 3 as const };
 }
 
 async function makeGroup(...members: string[]): Promise<string> {

@@ -57,7 +57,8 @@ export function nextTier(reached: Tier[]): Tier | null {
 
 /**
  * A habit square's points out of 10 (spec §3.7), unrounded. Earn squares and `atLeast` day/week
- * squares score their progress (and keep it when lost); limits score 10 after the month, unless lost.
+ * squares score their progress (and keep it when lost); limits of 0 and daily limits score per
+ * clean finished day, other limits 10 after the month, unless lost.
  */
 export function squarePoints(
 	rule: HabitRule,
@@ -67,7 +68,19 @@ export function squarePoints(
 	state: SquareState
 ): number {
 	const monthEnd = lastDayOf(monthOf(span.startDate));
-	// Limits are only won once the month is over.
+	if (rule.direction === 'atMost' && (rule.target === 0 || rule.period === 'day')) {
+		// Paid per finished day within the limit; a slip day pays nothing, the rest are kept.
+		const limit = rule.period === 'day' ? rule.target : 0;
+		const finished = addDays(today, -1) < monthEnd ? addDays(today, -1) : monthEnd;
+		let clean = 0;
+		let spanDays = 0;
+		for (let d = span.startDate; d <= monthEnd; d = addDays(d, 1)) {
+			spanDays++;
+			if (d <= finished && (counts.get(d) ?? 0) <= limit) clean++;
+		}
+		return (10 * clean) / spanDays;
+	}
+	// Other limits are only won once the month is over.
 	if (rule.direction === 'atMost') return state !== 'lost' && today > monthEnd ? 10 : 0;
 	if (rule.period === 'month') {
 		const k = progressBetween(rule, counts, span.startDate, today);
@@ -102,8 +115,8 @@ export type CardScore = {
 };
 
 /**
- * The card's totals (spec §3.6–§3.7): +25 per complete line, +100 for blackout, times the size's
- * multiplier, rounded once at the end. `squares` are in board order, the center included.
+ * The card's totals (spec §3.6–§3.7): +25 per complete line, +100 for blackout, rounded once at
+ * the end. `squares` are in board order, the center included.
  */
 export function scoreCard(
 	size: CardSize,
@@ -117,9 +130,10 @@ export function scoreCard(
 	const total = counting.filter(Boolean).length;
 	return {
 		counting: total,
-		percent: Math.round((100 * total) / squares.length),
+		// Progress: every habit square's points out of 10, averaged (the center scores nothing).
+		percent: Math.round((100 * base) / (10 * CARD_SIZES[size].habits)),
 		lines,
 		tiers,
-		points: Math.round((base + bonus) * CARD_SIZES[size].multiplier)
+		points: Math.round(base + bonus)
 	};
 }

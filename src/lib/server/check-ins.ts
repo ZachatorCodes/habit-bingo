@@ -2,8 +2,9 @@ import { and, eq, gt, inArray, sql } from 'drizzle-orm';
 import { backfillMonths, canLog } from '#lib/game/backfill.ts';
 import { highlightChanges } from '#lib/game/feed.ts';
 import { highlightState } from '#lib/server/card-view.ts';
-import { syncCheckIn, syncHighlights } from '#lib/server/feed.ts';
+import { NOTHING_POSTED, syncCheckIn, syncHighlights } from '#lib/server/feed.ts';
 import { localDate } from '#lib/server/clock.ts';
+import type { CardSize } from '#lib/game/card-layout.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { card, cardSquare, checkIn, habit } from '#lib/server/db/schema.ts';
 
@@ -69,7 +70,7 @@ async function checkLoggable(
 }
 
 /**
- * Runs a check-in write and posts or retracts the feed highlights it changed. The card row lock
+ * Runs a check-in write, then posts every highlight now true and retracts what is no longer. The card row lock
  * makes simultaneous check-ins on one card take turns, so a shared line posts its bingo once.
  */
 async function withHighlights(
@@ -82,13 +83,13 @@ async function withHighlights(
 	write: (tx: Db) => Promise<CheckInResult>
 ): Promise<CheckInResult> {
 	return db.transaction(async (tx) => {
-		const [{ cardId, nowPrivate }] = await tx
-			.select({ cardId: cardSquare.cardId, nowPrivate: habit.isPrivate })
+		const [{ cardId, size, nowPrivate }] = await tx
+			.select({ cardId: cardSquare.cardId, size: card.size, nowPrivate: habit.isPrivate })
 			.from(cardSquare)
+			.innerJoin(card, eq(card.id, cardSquare.cardId))
 			.leftJoin(habit, eq(habit.id, cardSquare.habitId))
 			.where(eq(cardSquare.id, squareId));
 		await tx.execute(sql`select id from card where id = ${cardId} for update`);
-		const before = await highlightState(tx, cardId, today);
 		const result = await write(tx);
 		const after = await highlightState(tx, cardId, today);
 		// A habit made private since the card started is private in the feed too.
@@ -97,9 +98,9 @@ async function withHighlights(
 		);
 		await syncHighlights(
 			tx,
-			{ id: cardId, userId },
+			{ id: cardId, userId, size: size as CardSize },
 			squares,
-			highlightChanges(before.state, after.state)
+			highlightChanges(NOTHING_POSTED, after.state)
 		);
 		const square = squares.find((s) => s.id === squareId);
 		if (result?.ok && square) {

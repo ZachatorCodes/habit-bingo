@@ -99,6 +99,13 @@
       "when": 1793421794600,
       "tag": "0013_check_in_feed",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1794545845946,
+      "tag": "0014_drop_points",
+      "breakpoints": true
     }
   ]
 }

@@ -26,7 +26,6 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 			return {
 				month: result.month,
 				name: `${monthName(result.month)} ${result.month.slice(0, 4)}`,
-				points: result.points,
 				tiers: result.tiers.map((tier) => labels[tier])
 			};
 		})

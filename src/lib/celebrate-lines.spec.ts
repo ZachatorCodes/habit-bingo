@@ -6,8 +6,7 @@ const score = (lines: number[][], tiers: CardScore['tiers'] = []): CardScore => 
 	counting: 0,
 	percent: 0,
 	lines,
-	tiers,
-	points: 0
+	tiers
 });
 
 describe('newlyCompleted', () => {

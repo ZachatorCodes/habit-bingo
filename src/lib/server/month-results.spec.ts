@@ -84,9 +84,10 @@ describe('finalizeMonths', () => {
 
 		await finalizeMonths(db, me.id, '2026-11-04');
 		const { score } = await cardView(db, me.id, card, '2026-11-04');
-		expect(await getResult(db, me.id, '2026-10')).toMatchObject({
+		const saved = await getResult(db, me.id, '2026-10');
+		expect(saved).not.toHaveProperty('points');
+		expect(saved).toMatchObject({
 			month: '2026-10',
-			points: score.points,
 			lines: score.lines.length,
 			tiers: score.tiers,
 			squaresCounting: score.counting,

@@ -1,7 +1,7 @@
 import { monthName, nextMonth } from '#lib/game/calendar.ts';
 import { evaluateSquare } from '#lib/game/evaluate.ts';
 import { centerState, nextMonthOpens } from '#lib/game/next-month.ts';
-import { counts, scoreCard, squarePoints, type CardScore } from '#lib/game/score.ts';
+import { counts, scoreCard, squareCompletion, type CardScore } from '#lib/game/score.ts';
 import type { SquareState } from '#lib/game/square-state.ts';
 import type { HighlightState } from '#lib/game/feed.ts';
 import { getCard, getCardById, type Card } from '#lib/server/cards.ts';
@@ -20,13 +20,14 @@ export type ViewSquare = {
 	progress?: number;
 	/** The center square, which leads to next month's card. */
 	link?: boolean;
-	points: number;
+	/** How much of its whole-month job is done, 0 to 1 (the center: 0). */
+	completion: number;
 	/** Counts toward lines, tiers and blackout now (see `evaluateSquare`). */
 	counting: boolean;
 };
 
 /**
- * A card as of `today`: every square's live state and points (the center by spec §3.5) and the
+ * A card as of `today`: every square's live state and completion (the center by spec §3.5) and the
  * card's score (§3.6–§3.7). Shared by the card and Today, which passes the check-ins it already has.
  */
 export async function cardView(
@@ -47,13 +48,13 @@ export async function cardView(
 	const state = centerState(card.month, today, builtInTime);
 	const center: ViewSquare =
 		today < nextMonthOpens(card.month)
-			? { icon: 'star', name: 'Free', state: 'free', points: 0, counting: true }
+			? { icon: 'star', name: 'Free', state: 'free', completion: 0, counting: true }
 			: {
 					icon: 'rocket',
 					name: state === 'buildNext' ? `Build ${next}'s card` : `${next} ready`,
 					state,
 					link: true,
-					points: 0,
+					completion: 0,
 					counting: counts(state)
 				};
 	const squares = card.squares.map((square): ViewSquare => {
@@ -65,7 +66,7 @@ export async function cardView(
 			icon: square.icon,
 			name: square.name,
 			...evaluation,
-			points: squarePoints(square, card, counts, today, evaluation.state)
+			completion: squareCompletion(square, card, counts, today, evaluation.state)
 		};
 	});
 	return { squares, score: scoreCard(card.size, squares), nextMonthName: next };

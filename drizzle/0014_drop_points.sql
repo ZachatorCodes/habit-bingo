@@ -1,0 +1,1 @@
+ALTER TABLE "month_result" DROP COLUMN "points";

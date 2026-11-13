@@ -9,7 +9,7 @@ import { normalizeRule, targetRange, type HabitRule } from '#lib/game/habit-rule
 import { highlightChanges } from '#lib/game/feed.ts';
 import { canBuildNextMonth } from '#lib/game/next-month.ts';
 import { prorateTarget } from '#lib/game/proration.ts';
-import type { IconName } from '#lib/icons.ts';
+import type { IconName } from '#lib/game/icons.ts';
 import { isUniqueViolation } from '#lib/server/auth/sign-up.ts';
 import { localDate, startOfLocalDay } from '#lib/server/clock.ts';
 import type { Db } from '#lib/server/db/client.ts';

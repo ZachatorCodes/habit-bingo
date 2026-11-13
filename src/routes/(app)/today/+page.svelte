@@ -20,7 +20,7 @@
 	import DaySwitcher from '#lib/components/DaySwitcher.svelte';
 	import Toast from '#lib/components/Toast.svelte';
 	import BingoCelebration from '#lib/components/BingoCelebration.svelte';
-	import { newlyCompleted } from '#lib/celebrate-lines.ts';
+	import { newlyCompleted } from '#lib/game/celebrate.ts';
 	import { greeting, todaySummary } from '#lib/game/greeting.ts';
 	import type { CardScore, Tier } from '#lib/game/score.ts';
 	import TodayRow from '#lib/components/TodayRow.svelte';

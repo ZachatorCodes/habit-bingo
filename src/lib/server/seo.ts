@@ -8,3 +8,6 @@ export function sitemapXml(origin: string, paths: readonly string[]): string {
 export function robotsTxt(origin: string): string {
 	return `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${origin}/sitemap.xml\n`;
 }
+
+/** Pages anyone can visit. Listed in the sitemap. */
+export const PUBLIC_PATHS = ['/', '/privacy', '/terms'] as const;

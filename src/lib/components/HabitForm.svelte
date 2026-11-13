@@ -6,7 +6,7 @@
 	import IconPicker from './IconPicker.svelte';
 	import TextField from './TextField.svelte';
 	import { CATEGORIES, type CategoryId } from '#lib/game/categories.ts';
-	import { CATEGORY_ICON, FALLBACK_ICON } from '#lib/icons.ts';
+	import { CATEGORY_ICON, FALLBACK_ICON } from '#lib/game/icons.ts';
 	import {
 		defaultCountMode,
 		describeRule,

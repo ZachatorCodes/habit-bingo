@@ -3,7 +3,7 @@
 import { and, count, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import { CATEGORIES, isCategoryId, type CategoryId } from '#lib/game/categories.ts';
 import { normalizeRule } from '#lib/game/habit-rules.ts';
-import { isPickableIcon, type IconName } from '#lib/icons.ts';
+import { isPickableIcon, type IconName } from '#lib/game/icons.ts';
 import { STARTERS } from '#lib/game/starters.ts';
 import type { Habit, HabitInput } from '#lib/game/types.ts';
 import type { Db } from '#lib/server/db/client.ts';

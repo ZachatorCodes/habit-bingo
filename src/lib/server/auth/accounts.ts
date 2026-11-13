@@ -1,7 +1,7 @@
 import { APIError } from 'better-auth/api';
 import { and, eq, isNotNull, isNull, or } from 'drizzle-orm';
-import { AVATAR_ICONS } from '#lib/icons.ts';
-import { isValidTimezone, type WeekStart } from '#lib/profile.ts';
+import { AVATAR_ICONS } from '#lib/game/icons.ts';
+import { isValidTimezone, type WeekStart } from '#lib/game/profile.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { account, user } from '#lib/server/db/schema.ts';
 import { leaveGroup, listGroups } from '#lib/server/groups.ts';

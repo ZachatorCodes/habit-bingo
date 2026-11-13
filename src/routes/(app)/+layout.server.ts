@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { DEFAULT_AVATAR_ICON } from '#lib/icons.ts';
+import { DEFAULT_AVATAR_ICON } from '#lib/game/icons.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import type { LayoutServerLoad } from './$types';
 

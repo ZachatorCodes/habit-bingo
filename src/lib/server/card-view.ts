@@ -9,7 +9,7 @@ import { getCheckIns } from '#lib/server/check-ins.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { card as cardTable } from '#lib/server/db/schema.ts';
 import { eq } from 'drizzle-orm';
-import type { IconName } from '#lib/icons.ts';
+import type { IconName } from '#lib/game/icons.ts';
 
 export type ViewSquare = {
 	/** Habit squares only: links to the habit sheet. */

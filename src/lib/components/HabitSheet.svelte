@@ -5,7 +5,7 @@
 	import { resolve } from '$app/paths';
 	import { tick } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
-	import { burst, tap } from '#lib/celebrate.ts';
+	import { burst, tap } from '#lib/components/card/celebrate.ts';
 	import { monthName, weekday } from '#lib/game/calendar.ts';
 	import Plus from 'phosphor-svelte/lib/Plus';
 	import MonthCalendar from './MonthCalendar.svelte';

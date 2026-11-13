@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
-	import { FALLBACK_ICON, isIconName, type IconName } from '#lib/icons.ts';
+	import { FALLBACK_ICON, isIconName, type IconName } from '#lib/game/icons.ts';
 	import Barbell from 'phosphor-svelte/lib/Barbell';
 	import PersonSimpleWalk from 'phosphor-svelte/lib/PersonSimpleWalk';
 	import PersonSimpleHike from 'phosphor-svelte/lib/PersonSimpleHike';

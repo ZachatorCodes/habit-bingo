@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { AVATAR_ICONS } from '#lib/icons.ts';
-import { isValidTimezone, type WeekStart } from '#lib/profile.ts';
+import { AVATAR_ICONS } from '#lib/game/icons.ts';
+import { isValidTimezone, type WeekStart } from '#lib/game/profile.ts';
 import { completeOnboarding } from '#lib/server/auth/accounts.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { readForm, requireDb } from '#lib/server/request.ts';

@@ -1,6 +1,6 @@
 import { error, type Cookies } from '@sveltejs/kit';
 import { TEST_CLOCK } from '$app/env/private';
-import type { WeekStart } from '#lib/profile.ts';
+import type { WeekStart } from '#lib/game/profile.ts';
 import { requestNow } from './clock.ts';
 import { getDb, type Db } from './db/client.ts';
 

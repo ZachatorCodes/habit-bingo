@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '$app/env/private';
-import { AVATAR_ICONS } from '#lib/icons.ts';
-import { deleteConfirmed, timezoneOptions, type WeekStart } from '#lib/profile.ts';
+import { AVATAR_ICONS } from '#lib/game/icons.ts';
+import { deleteConfirmed, timezoneOptions, type WeekStart } from '#lib/game/profile.ts';
 import {
 	changeUserPassword,
 	deleteAccount,

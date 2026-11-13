@@ -12,9 +12,9 @@ column, no UI.
 
 ## Rules
 
-- **% complete:** each habit square contributes its completion of the whole month's job, from 0 to
-  1. The card's % complete is the average across all habit squares (the center is excluded),
-     rounded to a whole percent.
+- **% complete:** each habit square contributes its completion of the whole month's job, a
+  share from 0 to 1. The card's % complete is the average across all habit squares (the center is
+  excluded), rounded to a whole percent.
   - **Monthly goal:** progress ÷ target, capped at 1.
   - **Daily habit:** each day's count, capped at the target, summed and divided by
     (target × days on the card).

@@ -10,7 +10,6 @@ const score = (overrides = {}) => ({
 	percent: 44,
 	lines: [] as number[][],
 	tiers: [] as ('bingo' | 'sixtyPercent' | 'blackout')[],
-	points: 120,
 	...overrides
 });
 

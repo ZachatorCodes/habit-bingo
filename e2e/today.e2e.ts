@@ -326,7 +326,7 @@ test('the card header reflects check-ins', async ({ page }) => {
 		return Number(text.split(' ')[0]);
 	};
 	const before = await pointsOf();
-	await expect(page.getByText(/\d+% counting/)).toBeVisible();
+	await expect(page.getByText(/\d+% complete/)).toBeVisible();
 	await page.goto('/today');
 	await waitForHydration(page);
 	await page.getByRole('button', { name: 'Log Finish a book' }).click();

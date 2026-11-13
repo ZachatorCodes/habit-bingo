@@ -196,7 +196,7 @@ test('card names show on 5×5 at wide widths', async ({ page, baseURL }, info) =
 	await expect(page).toHaveURL(/\/card\/build\/rewards$/);
 	await waitForHydration(page);
 	await page.getByLabel('First bingo').fill('Ice cream');
-	await page.getByLabel('15 squares').fill('Movie night');
+	await page.getByLabel('12 squares').fill('Movie night');
 	await page.getByLabel('Blackout').fill('A weekend away');
 	await page.getByRole('button', { name: 'Continue' }).click();
 	await expect(page).toHaveURL(/\/card\/build\/board$/);

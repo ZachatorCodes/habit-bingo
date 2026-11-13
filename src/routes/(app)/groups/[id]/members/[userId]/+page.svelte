@@ -22,7 +22,7 @@
 <Hero
 	title={`@${data.member.displayUsername}'s card`}
 	summary={data.card
-		? `${data.monthName} · ${plural(data.card.score.points, 'point')} · ${plural(data.card.score.lines.length, 'line')} · ${data.card.score.percent}% counting`
+		? `${data.monthName} · ${plural(data.card.score.points, 'point')} · ${plural(data.card.score.lines.length, 'line')} · ${data.card.score.percent}% complete`
 		: data.monthName}
 >
 	<span

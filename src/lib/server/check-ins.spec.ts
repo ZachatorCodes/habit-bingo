@@ -308,6 +308,19 @@ describe('feed highlights', () => {
 		expect(await keys(card.id)).not.toContain('tier:bingo');
 	});
 
+	it('the middle reward stores its square count', async () => {
+		const me = await makeUser();
+		const card = await cardFor(me, await makeHabits(me.id, 8, monthly), OCT_1);
+		for (const i of [0, 1, 2, 3]) {
+			await logCheckIn(db, me, habitSquare(card, i).id, '2026-10-20', 1, OCT_20);
+		}
+		const [tier] = await db
+			.select({ payload: feedEvent.payload })
+			.from(feedEvent)
+			.where(and(eq(feedEvent.cardId, card.id), eq(feedEvent.key, 'tier:sixtyPercent')));
+		expect(tier.payload).toEqual({ squares: 5 });
+	});
+
 	it('simultaneous logs post one bingo', async () => {
 		const me = await makeUser();
 		const card = await cardFor(me, await makeHabits(me.id, 8, monthly), OCT_1);

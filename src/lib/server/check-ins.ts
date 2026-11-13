@@ -4,6 +4,7 @@ import { highlightChanges } from '#lib/game/feed.ts';
 import { highlightState } from '#lib/server/card-view.ts';
 import { syncCheckIn, syncHighlights } from '#lib/server/feed.ts';
 import { localDate } from '#lib/server/clock.ts';
+import type { CardSize } from '#lib/game/card-layout.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { card, cardSquare, checkIn, habit } from '#lib/server/db/schema.ts';
 
@@ -82,9 +83,10 @@ async function withHighlights(
 	write: (tx: Db) => Promise<CheckInResult>
 ): Promise<CheckInResult> {
 	return db.transaction(async (tx) => {
-		const [{ cardId, nowPrivate }] = await tx
-			.select({ cardId: cardSquare.cardId, nowPrivate: habit.isPrivate })
+		const [{ cardId, size, nowPrivate }] = await tx
+			.select({ cardId: cardSquare.cardId, size: card.size, nowPrivate: habit.isPrivate })
 			.from(cardSquare)
+			.innerJoin(card, eq(card.id, cardSquare.cardId))
 			.leftJoin(habit, eq(habit.id, cardSquare.habitId))
 			.where(eq(cardSquare.id, squareId));
 		await tx.execute(sql`select id from card where id = ${cardId} for update`);
@@ -97,7 +99,7 @@ async function withHighlights(
 		);
 		await syncHighlights(
 			tx,
-			{ id: cardId, userId },
+			{ id: cardId, userId, size: size as CardSize },
 			squares,
 			highlightChanges(before.state, after.state)
 		);

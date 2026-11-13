@@ -10,6 +10,7 @@ const data: SheetData = {
 	category: 'Health',
 	rule: '8 times a day',
 	countMode: 'times',
+	period: 'day',
 	state: 'atRisk',
 	progress: 0,
 	counting: true,
@@ -42,6 +43,19 @@ describe('HabitSheet', () => {
 		await expect.element(page.getByText(note)).toBeVisible();
 		unmount();
 		render(HabitSheet, { data: { ...limit, counting: true } });
+		expect(page.getByText(note).elements()).toHaveLength(0);
+	});
+
+	it('says a daily or weekly square counts at the end of the month', async () => {
+		const note = 'Counts at the end of the month if you keep it up.';
+		const daily = { ...data, state: 'held' as const };
+		const first = render(HabitSheet, { data: { ...daily, counting: false } });
+		await expect.element(page.getByText(note)).toBeVisible();
+		first.unmount();
+		const second = render(HabitSheet, { data: { ...daily, counting: true } });
+		expect(page.getByText(note).elements()).toHaveLength(0);
+		second.unmount();
+		render(HabitSheet, { data: { ...daily, period: 'month' as const, counting: false } });
 		expect(page.getByText(note).elements()).toHaveLength(0);
 	});
 

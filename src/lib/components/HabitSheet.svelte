@@ -12,6 +12,7 @@
 		rule: string;
 		/** `times` gets a stepper, `days` a "Done that day" toggle. */
 		countMode: 'times' | 'days';
+		period: 'day' | 'week' | 'month';
 		state: SquareState;
 		progress: number;
 		/** Counts toward lines, tiers and points now. */
@@ -151,6 +152,11 @@
 			{#if data.calendar.direction === 'atMost' && data.state !== 'lost' && !data.counting}
 				<p class="text-[13px] font-semibold text-muted">
 					Counts at the end of the month if you stay under.
+				</p>
+			{/if}
+			{#if data.calendar.direction === 'atLeast' && data.period !== 'month' && data.state !== 'lost' && !data.counting}
+				<p class="text-[13px] font-semibold text-muted">
+					Counts at the end of the month if you keep it up.
 				</p>
 			{/if}
 		</div>

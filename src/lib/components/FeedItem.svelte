@@ -33,7 +33,8 @@
 		}
 		if (item.type === 'bingo') return 'got a bingo!';
 		if (item.type === 'blackout') return 'got a blackout!';
-		if (item.type === 'sixtyPercent') return 'reached 60% of their squares';
+		if (item.type === 'sixtyPercent')
+			return p.squares ? `reached ${p.squares} squares` : 'reached their middle reward';
 		return `started their ${monthName(String(p.month))} card`;
 	});
 

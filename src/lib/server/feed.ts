@@ -1,5 +1,6 @@
 import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 import { REACTIONS, type highlightChanges, type ReactionIcon } from '#lib/game/feed.ts';
+import { CARD_SIZES, type CardSize } from '#lib/game/card-layout.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { feedEvent, groupMember, reaction, user } from '#lib/server/db/schema.ts';
 import type { FeedEventType } from '#lib/server/db/schema/feed.ts';
@@ -47,7 +48,7 @@ export async function postCardStarted(
 /** Applies `highlightChanges` output: inserts are idempotent, removals take reactions with them. */
 export async function syncHighlights(
 	tx: Db,
-	card: { id: string; userId: string },
+	card: { id: string; userId: string; size: CardSize },
 	squares: { id: string; name: string | null; icon: string | null; isPrivate: boolean | null }[],
 	changes: ReturnType<typeof highlightChanges>
 ): Promise<void> {
@@ -68,7 +69,9 @@ export async function syncHighlights(
 				type: typeOf(key),
 				key,
 				payload: !square
-					? {}
+					? key === 'tier:sixtyPercent'
+						? { squares: CARD_SIZES[card.size].sixtyThreshold }
+						: {}
 					: square.isPrivate
 						? { private: true }
 						: { name: square.name, icon: square.icon },

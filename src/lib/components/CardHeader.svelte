@@ -69,7 +69,7 @@
 		</div>
 
 		<div class="flex flex-col lg:col-start-2 lg:row-start-2">
-			<p class="mb-1 text-xs font-extrabold tracking-[0.02em]">{score.percent}% counting</p>
+			<p class="mb-1 text-xs font-extrabold tracking-[0.02em]">{score.percent}% complete</p>
 			<ul aria-label="Rewards" class="flex flex-col divide-y divide-line">
 				{#each tiers as { tier, label, reward } (tier)}
 					<li class="flex items-baseline justify-between gap-3 py-2 text-sm">

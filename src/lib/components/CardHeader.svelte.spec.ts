@@ -32,14 +32,14 @@ const props = (overrides: { states?: SquareState[] } & Record<string, unknown> =
 };
 
 describe('CardHeader', () => {
-	it('shows the month, days left, points and percent counting', async () => {
+	it('shows the month, days left, points and percent complete', async () => {
 		render(CardHeader, props());
 		await expect
 			.element(page.getByRole('heading', { level: 1, name: 'October card' }))
 			.toBeVisible();
 		await expect.element(page.getByText('14 days left')).toBeVisible();
 		await expect.element(page.getByText('120pts')).toBeVisible();
-		await expect.element(page.getByText('44% counting')).toBeVisible();
+		await expect.element(page.getByText('44% complete')).toBeVisible();
 	});
 
 	it('uses the singular day', async () => {
@@ -81,7 +81,7 @@ describe('CardHeader', () => {
 		const tiers = page.getByRole('list', { name: 'Rewards' }).getByRole('listitem');
 		expect(tiers.elements().map((li) => li.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
 			'Bingo Ice cream Reached',
-			'15 squares Movie night',
+			'12 squares Movie night',
 			'Blackout A weekend away'
 		]);
 	});

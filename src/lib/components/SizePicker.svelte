@@ -29,7 +29,7 @@
 					class="absolute top-3 right-3 hidden text-forest group-has-[:checked]:block"
 				/>
 				<span class="text-xl font-extrabold">{size}×{size}</span>
-				<span class="font-bold">{need} habits · {CARD_SIZES[size].multiplier}× points</span>
+				<span class="font-bold">{need} habits</span>
 				<span class="text-sm text-muted">You have {habitCount} habits / need {need}</span>
 				{#if habitCount < need}
 					<span class="text-sm font-bold">Add {need - habitCount} more in the next step.</span>

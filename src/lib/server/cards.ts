@@ -404,7 +404,7 @@ export async function updateCard(
 		const current = await highlightState(tx, existing.id, localDate(now, user.timezone));
 		await syncHighlights(
 			tx,
-			{ id: existing.id, userId: user.id },
+			{ id: existing.id, userId: user.id, size: existing.size },
 			current.squares,
 			highlightChanges(current.state, current.state)
 		);

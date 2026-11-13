@@ -5,6 +5,7 @@ import { building } from '$app/env';
 import { tryGetAuth } from '#lib/server/auth/index.ts';
 import { isSharedCacheable, PUBLIC_CACHED_ROUTES } from '#lib/server/cache.ts';
 import { toAppError } from '#lib/server/errors.ts';
+import { log } from '#lib/server/log.ts';
 import { SECURITY_HEADERS } from '#lib/server/security-headers.ts';
 
 /** Loads the session into `locals` and serves Better Auth's routes under /api/auth. */
@@ -26,13 +27,11 @@ export const authHandle: Handle = async ({ event, resolve }) => {
 		}
 	} catch (error) {
 		// A database outage must not take down public pages or /api/health; treat it as signed out.
-		console.error(
-			JSON.stringify({
-				level: 'error',
-				source: 'auth-session',
-				message: error instanceof Error ? error.message : String(error)
-			})
-		);
+		log({
+			level: 'error',
+			source: 'auth-session',
+			message: error instanceof Error ? error.message : String(error)
+		});
 	}
 	return svelteKitHandler({ auth, event, resolve, building });
 };
@@ -117,9 +116,7 @@ function setSecurityHeaders(headers: Headers): void {
 export const handleError: HandleServerError = ({ kind, error, event }) => {
 	// App errors, validation errors and SvelteKit's own (like 404) already carry safe messages.
 	if (kind !== 'unknown') return;
-	return toAppError(error, loggablePath(event.url.pathname), (entry) =>
-		console.error(JSON.stringify(entry))
-	);
+	return toAppError(error, loggablePath(event.url.pathname), log);
 };
 
 /** The path for logs, with bearer secrets (reset-link tokens) taken out. */

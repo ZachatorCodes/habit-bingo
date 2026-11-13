@@ -1,3 +1,4 @@
+import { log } from '../log.ts';
 import { createHash } from 'node:crypto';
 
 const RANGE_URL = 'https://api.pwnedpasswords.com/range/';
@@ -38,5 +39,5 @@ export async function isPwnedPassword(
 }
 
 function warn(message: string) {
-	console.warn(JSON.stringify({ level: 'warn', source: 'hibp', message }));
+	log({ level: 'warn', source: 'hibp', message });
 }

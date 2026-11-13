@@ -2,7 +2,15 @@
 // person; a draft from another month is forgotten, since the month decides which card it builds.
 import { and, eq, lt } from 'drizzle-orm';
 import * as z from 'zod';
-import { STEPS, emptyDraft, stepsFor, type CardDraft } from '#lib/game/card-draft.ts';
+import {
+	STEPS,
+	emptyDraft,
+	stepsFor,
+	type CardDraft,
+	type PickedHabit
+} from '#lib/game/card-draft.ts';
+import { CARD_SIZES, type CardSize } from '#lib/game/card-layout.ts';
+import { listHabits } from '#lib/server/habits.ts';
 import type { Card } from '#lib/server/cards.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { cardDraft } from '#lib/server/db/schema.ts';
@@ -74,4 +82,21 @@ export function draftFromCard(card: Card): CardDraft {
 		completed: []
 	};
 	return { ...draft, completed: stepsFor(draft) };
+}
+
+/**
+ * The picked habits that can go on the card, in pick order: active habits, and habits already on
+ * the card being edited (which stay as they are even when archived since). Null when a habit
+ * archived after it was picked leaves the set short, so the person must re-pick.
+ */
+export async function pickedHabits(
+	db: Db,
+	userId: string,
+	draft: CardDraft,
+	size: CardSize,
+	kept: ReadonlyMap<string, PickedHabit>
+): Promise<PickedHabit[] | null> {
+	const active = new Map((await listHabits(db, userId)).map((h) => [h.id, h]));
+	const picked = draft.habitIds.flatMap((id) => kept.get(id) ?? active.get(id) ?? []);
+	return picked.length === CARD_SIZES[size].habits ? picked : null;
 }

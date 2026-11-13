@@ -5,7 +5,8 @@ import type { Card } from '#lib/server/cards.ts';
 import { cardDraft, user } from '#lib/server/db/schema.ts';
 import { createTestDb } from '#lib/server/db/test-db.ts';
 import { emptyDraft } from '#lib/game/card-draft.ts';
-import { discardDraft, draftFromCard, getDraft, saveDraft } from './card-drafts';
+import { archiveHabit, createHabit } from './habits';
+import { discardDraft, draftFromCard, getDraft, pickedHabits, saveDraft } from './card-drafts';
 
 let db: Db;
 let userId: string;
@@ -119,5 +120,28 @@ describe('card drafts', () => {
 		expect(bigDraft.layout![12]).toBeNull();
 		expect(bigDraft.habitIds).toHaveLength(24);
 		expect(Object.keys(bigDraft.targets)).toHaveLength(24);
+	});
+
+	it('pickedHabits gives the picks in order, or null once one is archived', async () => {
+		const ids: string[] = [];
+		for (let i = 0; i < 8; i++) {
+			const made = await createHabit(db, userId, {
+				icon: 'bicycle',
+				name: `Habit ${i}`,
+				category: 'fitness',
+				direction: 'atLeast',
+				period: 'week',
+				countMode: 'days',
+				target: 3,
+				isPrivate: false
+			});
+			if (!made.ok) throw new Error(made.message);
+			ids.push(made.habit.id);
+		}
+		const draft = { ...emptyDraft('2026-10'), size: 3 as const, habitIds: [...ids].reverse() };
+		const picked = await pickedHabits(db, userId, draft, 3, new Map());
+		expect(picked?.map((h) => h.id)).toEqual([...ids].reverse());
+		await archiveHabit(db, userId, ids[0], new Date());
+		expect(await pickedHabits(db, userId, draft, 3, new Map())).toBeNull();
 	});
 });

@@ -41,7 +41,11 @@ export function evaluateSquare(
 	}
 	const state = protectState(rule, span, checkIns, today, end);
 	// Only a completed square counts mid-month; the rest count once the month is over.
-	return { state, progress: 0, counting: counts(state) && today > monthEnd };
+	return {
+		state,
+		progress: state === 'inProgress' ? periodProgress(rule, span, checkIns, end) : 0,
+		counting: counts(state) && today > monthEnd
+	};
 }
 
 function protectState(
@@ -64,7 +68,10 @@ function protectState(
 		const missed = days.filter((d) => d !== today && count(d) < rule.target);
 		if (missed.some((d) => d < settled)) return 'lost';
 		// Nothing counts until a first day is met.
-		if (!days.some((d) => count(d) >= rule.target)) return 'empty';
+		// Not started until something is logged; in progress until a first day is met.
+		if (!days.some((d) => count(d) >= rule.target)) {
+			return days.some((d) => count(d) > 0) ? 'inProgress' : 'empty';
+		}
 		return missed.length > 0 ? 'atRisk' : 'held';
 	}
 
@@ -99,8 +106,16 @@ function protectState(
 			atRisk = true;
 		}
 	}
-	if (!met) return 'empty';
+	if (!met) return weeks.some((week) => progress(week) > 0) ? 'inProgress' : 'empty';
 	return atRisk ? 'atRisk' : 'held';
+}
+
+/** A started day or week habit's fill: today's count, or this week's days, over what it needs. */
+function periodProgress(rule: HabitRule, span: CardSpan, checkIns: Counts, end: string): number {
+	if (rule.period === 'day') return Math.min(checkIns.get(end) ?? 0, rule.target) / rule.target;
+	const week = weekOf(clippedWeeks(rule, span.startDate, span.weekStartsOn), end)!;
+	const need = Math.max(week.required, 1);
+	return Math.min(progressBetween(rule, checkIns, week.start, end), need) / need;
 }
 
 function minDate(a: string, b: string): string {

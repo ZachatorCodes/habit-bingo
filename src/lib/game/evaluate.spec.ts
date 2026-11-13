@@ -298,3 +298,30 @@ describe('only completed squares count before the month is over', () => {
 		});
 	});
 });
+
+describe('a started habit that has not met its first day or week yet', () => {
+	it('a 5-days-a-week habit with one day logged is in progress, filling for this week', () => {
+		const bed = rule('atLeast', 'week', 'days', 5);
+		const monday: CardSpan = { startDate: '2026-10-12', weekStartsOn: 'monday' };
+		expect(evaluateSquare(bed, monday, counts({}), '2026-10-13').state).toBe('empty');
+		expect(evaluateSquare(bed, monday, counts({ '2026-10-12': 1 }), '2026-10-13')).toEqual({
+			state: 'inProgress',
+			progress: 0.2,
+			counting: false
+		});
+	});
+
+	it('a daily count habit part-way through its first day is in progress', () => {
+		const water = rule('atLeast', 'day', 'times', 8);
+		expect(evaluateSquare(water, span, counts({ '2026-10-01': 3 }), '2026-10-01')).toEqual({
+			state: 'inProgress',
+			progress: 3 / 8,
+			counting: false
+		});
+		// The next morning, nothing logged yet today: still started, the ring empty for today.
+		expect(evaluateSquare(water, span, counts({ '2026-10-01': 3 }), '2026-10-02')).toMatchObject({
+			state: 'inProgress',
+			progress: 0
+		});
+	});
+});

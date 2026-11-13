@@ -356,3 +356,18 @@ test('the shared header is 40px and as wide as a full-width panel at desktop', a
 		expect(Math.abs(header.width - panel.width)).toBeLessThanOrEqual(1);
 	}
 });
+
+test("today's board has bigger icons than the card page at desktop", async ({ page }, info) => {
+	test.skip(info.project.name !== 'desktop');
+	await newMemberWithHabits(page, 8);
+	await setClock(page, '2026-10-15T12:00:00Z');
+	await buildAndStartCard(page);
+	const ringWidth = async (scope: string) =>
+		(await page.locator(`${scope} [role="img"][data-state] svg`).first().boundingBox())!.width;
+	await page.goto('/card');
+	const onCard = await ringWidth('main');
+	await page.goto('/today');
+	const onToday = await ringWidth('section[aria-label="Your card"]');
+	expect(onToday).toBeGreaterThan(onCard);
+	await expectNoHorizontalScroll(page);
+});

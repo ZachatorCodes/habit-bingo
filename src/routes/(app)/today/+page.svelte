@@ -262,7 +262,7 @@
 		<!-- The card beside the list on wide screens (spec §3). -->
 		<section aria-label="Your card" class="hidden self-start lg:sticky lg:top-4 lg:block">
 			{#if data.board}
-				<CardBoard size={data.board.size} squares={data.board.squares} onopen={openSheet} />
+				<CardBoard size={data.board.size} squares={data.board.squares} onopen={openSheet} large />
 				<div class="mt-3 flex items-baseline justify-between gap-3">
 					<p class="text-[26px] leading-none font-extrabold text-forest tabular-nums">
 						{data.board.score.points}<span class="ml-1 text-xs font-semibold text-muted">pts</span>

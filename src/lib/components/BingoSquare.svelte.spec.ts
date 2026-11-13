@@ -11,6 +11,26 @@ describe('BingoSquare', () => {
 			.toBeInTheDocument();
 	});
 
+	it('large squares use the big ring and a big Free label; compact wins', async () => {
+		const big = render(BingoSquare, {
+			icon: 'bicycle',
+			label: 'Bike',
+			state: 'empty',
+			large: true
+		});
+		expect(big.container.querySelector('[style*="width: 56px"]')).not.toBeNull();
+		const free = render(BingoSquare, { icon: 'star', label: 'Free', state: 'free', large: true });
+		expect(free.container.querySelector('span.text-lg')?.textContent).toBe('Free');
+		const both = render(BingoSquare, {
+			icon: 'bicycle',
+			label: 'Bike',
+			state: 'empty',
+			large: true,
+			compact: true
+		});
+		expect(both.container.querySelector('[style*="width: 32px"]')).not.toBeNull();
+	});
+
 	it('draws the icon as an svg, falling back for unknown names', async () => {
 		const { container } = render(BingoSquare, { icon: 'bicycle', label: 'Bike', state: 'empty' });
 		expect(container.querySelector('svg')).not.toBeNull();

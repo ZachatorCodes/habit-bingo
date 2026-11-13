@@ -21,9 +21,11 @@
 		onopen?: (event: MouseEvent, href: string) => void;
 		/** Lines just completed: their squares ripple gold in sequence (spec §4.7). */
 		highlight?: number[][];
+		/** Bigger icons and Free label (Today's wide board panel). */
+		large?: boolean;
 	};
 
-	let { size, squares, onopen, highlight = [] }: Props = $props();
+	let { size, squares, onopen, highlight = [], large = false }: Props = $props();
 
 	// Each square's ripple delay: its place along the first completed line it's on.
 	const delays = $derived.by(() => {
@@ -55,6 +57,7 @@
 						state={square.state}
 						progress={square.progress}
 						compact={size === 5}
+						{large}
 					/>
 				</a>
 			{:else if square.id}
@@ -66,6 +69,7 @@
 						state={square.state}
 						progress={square.progress}
 						compact={size === 5}
+						{large}
 					/>
 				</a>
 			{:else}
@@ -75,6 +79,7 @@
 					state={square.state}
 					progress={square.progress}
 					compact={size === 5}
+					{large}
 				/>
 			{/if}
 		</div>

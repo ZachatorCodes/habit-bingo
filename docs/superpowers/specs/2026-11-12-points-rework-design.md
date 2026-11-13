@@ -88,6 +88,12 @@ Saved `month_result` rows are **not** recalculated. Months closing from now on u
   - New middle-reward highlights store `{ squares: N }` in their payload and read "reached 5
     squares" or "reached 12 squares".
   - Older ones have no count stored and read "reached their middle reward".
+  - **Rewards reached by the month ending (decided in final review):** most lines now complete
+    when the month rolls over, not on a check-in. So every check-in, and finalizing a month on
+    the 4th, posts each highlight that is true and not yet posted.
+  - **Keeping old reward highlights (decided in final review):** new reward highlights store
+    `rules: 2`. Only marked reward highlights are removed when no longer true, so posts from
+    before this change, and their reactions, stay.
 
 ## 4. Testing (test-driven)
 

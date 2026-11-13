@@ -1,10 +1,12 @@
 import { and, desc, eq, isNull, lt } from 'drizzle-orm';
 import { monthOf } from '#lib/game/calendar.ts';
 import { isFinal } from '#lib/game/recap.ts';
-import { cardView } from '#lib/server/card-view.ts';
+import { highlightChanges } from '#lib/game/feed.ts';
+import { cardView, highlightState } from '#lib/server/card-view.ts';
 import { getCard } from '#lib/server/cards.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { card, monthResult } from '#lib/server/db/schema.ts';
+import { NOTHING_POSTED, syncHighlights } from '#lib/server/feed.ts';
 
 export type MonthResult = typeof monthResult.$inferSelect;
 
@@ -37,6 +39,14 @@ export async function finalizeMonths(db: Db, userId: string, today: string): Pro
 				size: finished.size
 			})
 			.onConflictDoNothing();
+		// Rewards reached by the month ending had no check-in to post them.
+		const now = await highlightState(db, finished.id, today);
+		await syncHighlights(
+			db,
+			{ id: finished.id, userId, size: finished.size },
+			now.squares,
+			highlightChanges(NOTHING_POSTED, now.state)
+		);
 	}
 }
 

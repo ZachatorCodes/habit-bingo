@@ -64,6 +64,23 @@ describe('CardHeader', () => {
 		await expect.element(page.getByText('No lines left this month')).toBeVisible();
 	});
 
+	it('counts on-track squares toward a line, without calling it a bingo', async () => {
+		// The middle row: two protected habits that count at month end, and the Free center.
+		const states: SquareState[] = [...base.states];
+		states[3] = 'held';
+		states[5] = 'atRisk';
+		const onTrack = render(
+			CardHeader,
+			props({ states, counting: states.map((s) => s === 'free') })
+		);
+		await expect.element(page.getByText('On track for a bingo')).toBeVisible();
+		expect(page.getByText('Bingo!').elements()).toHaveLength(0);
+		await onTrack.unmount();
+		states[5] = 'empty';
+		render(CardHeader, props({ states, counting: states.map((s) => s === 'free') }));
+		await expect.element(page.getByText('1 square from a line')).toBeVisible();
+	});
+
 	it('uses a singular square and hides the next reward once all are reached', async () => {
 		render(
 			CardHeader,

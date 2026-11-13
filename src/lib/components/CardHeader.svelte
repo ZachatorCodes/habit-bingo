@@ -32,13 +32,19 @@
 		},
 		{ tier: 'blackout', label: 'Blackout', reward: rewards.blackout }
 	]);
-	const toLine = $derived(squaresToLine(size, states, counting));
+	// On track: counts now, or a protected / at-risk habit that counts at month end if kept up.
+	const onTrack = $derived(
+		states.map((state, i) => counting[i] || state === 'held' || state === 'atRisk')
+	);
+	const toLine = $derived(squaresToLine(size, states, onTrack));
 	const lineText = $derived(
-		toLine === null
-			? 'No lines left this month'
-			: toLine === 0
-				? 'Bingo!'
-				: `${toLine} ${toLine === 1 ? 'square' : 'squares'} from a line`
+		squaresToLine(size, states, counting) === 0
+			? 'Bingo!'
+			: toLine === null
+				? 'No lines left this month'
+				: toLine === 0
+					? 'On track for a bingo'
+					: `${toLine} ${toLine === 1 ? 'square' : 'squares'} from a line`
 	);
 	const next = $derived(nextTier(score.tiers));
 	const nextReward = $derived(

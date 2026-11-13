@@ -5,7 +5,7 @@
 
 ## Context
 
-Square states (earn, protect, at-risk, lost), lines, reward tiers and points all depend on the
+Square states (earn, protect, at-risk, lost), lines, reward tiers and % complete all depend on the
 card, its check-ins, the 3-day backfill window, and "today" in the user's timezone. Storing them
 would mean keeping many denormalized values in sync with every check-in and every passing day.
 
@@ -20,4 +20,7 @@ ends.
 - One source of truth; scores cannot drift from check-ins.
 - The rules are pure functions, so they are exhaustively unit-testable with 100% branch coverage.
 - Every read recomputes state; cards are at most 25 squares, so this is cheap.
-- All-time leaderboards read snapshots, so finalized history never changes.
+- History and recaps read snapshots, so finalized history never changes.
+
+Updated 2026-11-13: points were removed (#122); % complete replaced them, and there is no all-time
+leaderboard.

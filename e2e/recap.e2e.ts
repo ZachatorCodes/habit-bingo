@@ -30,6 +30,7 @@ test('a finished month gets a banner, a recap and a History entry', async ({ pag
 	await expect(page).toHaveURL(/\/me\/history\/2026-10$/);
 	await expect(page.getByRole('heading', { level: 1, name: 'October recap' })).toBeVisible();
 	await expect(page.getByText('Drink water: 1 check-in')).toBeVisible();
+	await expect(page.getByText(/\d of 9 squares counting/)).toBeVisible();
 	await expect(page.getByRole('heading', { name: 'Rewards earned' })).toHaveCount(0);
 	await expect(page.getByRole('link', { name: "Build November's card" })).toBeVisible();
 

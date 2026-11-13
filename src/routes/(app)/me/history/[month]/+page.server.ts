@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { TEST_CLOCK } from '$app/env/private';
 import { monthName, monthOf } from '#lib/game/calendar.ts';
-import { CARD_SIZES } from '#lib/game/card-layout.ts';
+import { middleReward } from '#lib/game/card-layout.ts';
 import { categoryBreakdown, mostLogged } from '#lib/game/recap.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { cardView } from '#lib/server/card-view.ts';
@@ -35,10 +35,9 @@ export const load: PageServerLoad = async ({ locals, cookies, params }) => {
 	const habitSquares = card.squares.flatMap((square, index) =>
 		square.isCenter ? [] : [{ ...square, state: squares[index].state }]
 	);
-	const { sixtyThreshold } = CARD_SIZES[card.size];
 	const labels = {
 		bingo: 'First bingo',
-		sixtyPercent: `${sixtyThreshold} squares`,
+		sixtyPercent: `${middleReward(card.size, params.month)} squares`,
 		blackout: 'Blackout'
 	};
 	const rewards = {
@@ -54,7 +53,7 @@ export const load: PageServerLoad = async ({ locals, cookies, params }) => {
 		// Read-only: no habit sheet, no link to next month.
 		board: squares.map(({ icon, name, state, progress }) => ({ icon, name, state, progress })),
 		result,
-		percent: Math.round((result.squaresCounting / card.size ** 2) * 100),
+		squares: card.size ** 2,
 		rewards: result.tiers.map((tier) => ({ label: labels[tier], reward: rewards[tier] })),
 		highlight: mostLogged(habitSquares, checkIns),
 		categories: categoryBreakdown(habitSquares),

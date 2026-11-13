@@ -154,7 +154,7 @@
 					Counts at the end of the month if you stay under.
 				</p>
 			{/if}
-			{#if data.calendar.direction === 'atLeast' && data.period !== 'month' && data.state !== 'lost' && !data.counting}
+			{#if data.calendar.direction === 'atLeast' && data.period !== 'month' && (data.state === 'held' || data.state === 'atRisk') && !data.counting}
 				<p class="text-[13px] font-semibold text-muted">
 					Counts at the end of the month if you keep it up.
 				</p>

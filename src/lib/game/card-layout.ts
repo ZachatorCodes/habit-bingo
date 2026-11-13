@@ -18,6 +18,11 @@ export const CARD_SIZES: Record<
 	5: { habits: 24, squares: 25, sixtyThreshold: 12, centerPosition: 12 }
 };
 
+/** The middle reward's square count for a card's month: 5×5 months before the 2026-11 rework needed 15. */
+export function middleReward(size: CardSize, month: string): number {
+	return size === 5 && month < '2026-11' ? 15 : CARD_SIZES[size].sixtyThreshold;
+}
+
 /** Fisher-Yates shuffle of `items`, with a null (the center square) inserted at the center. */
 export function shuffleLayout<T>(
 	items: readonly T[],

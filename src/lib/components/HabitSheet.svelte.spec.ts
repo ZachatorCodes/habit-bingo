@@ -55,7 +55,13 @@ describe('HabitSheet', () => {
 		const second = render(HabitSheet, { data: { ...daily, counting: true } });
 		expect(page.getByText(note).elements()).toHaveLength(0);
 		second.unmount();
-		render(HabitSheet, { data: { ...daily, period: 'month' as const, counting: false } });
+		const third = render(HabitSheet, {
+			data: { ...daily, period: 'month' as const, counting: false }
+		});
+		expect(page.getByText(note).elements()).toHaveLength(0);
+		third.unmount();
+		// Not on a habit that hasn't started yet.
+		render(HabitSheet, { data: { ...daily, state: 'empty' as const, counting: false } });
 		expect(page.getByText(note).elements()).toHaveLength(0);
 	});
 

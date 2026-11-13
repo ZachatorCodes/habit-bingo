@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CARD_SIZES, isCardSize, isValidLayout, shuffleLayout } from './card-layout';
+import { CARD_SIZES, isCardSize, isValidLayout, middleReward, shuffleLayout } from './card-layout';
 
 const items = (n: number) => Array.from({ length: n }, (_, i) => `h${i}`);
 
@@ -22,6 +22,15 @@ describe('card sizes', () => {
 		expect(isCardSize(5)).toBe(true);
 		expect(isCardSize(4)).toBe(false);
 		expect(isCardSize('5')).toBe(false);
+	});
+});
+
+describe('middleReward', () => {
+	it('is 5 and 12 squares, but 15 on 5×5 months finished before the points rework', () => {
+		expect(middleReward(3, '2026-10')).toBe(5);
+		expect(middleReward(5, '2026-10')).toBe(15);
+		expect(middleReward(5, '2026-11')).toBe(12);
+		expect(middleReward(3, '2026-11')).toBe(5);
 	});
 });
 

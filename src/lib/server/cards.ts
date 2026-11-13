@@ -1,5 +1,6 @@
 // Monthly cards: a snapshot of nine or twenty-four habits, laid out on a board. Every query is
 // scoped to the signed-in user.
+import type { Rewards } from '#lib/game/types.ts';
 import { and, asc, eq, inArray, like, or, sql, type SQL } from 'drizzle-orm';
 import { monthName, monthOf, nextMonth } from '#lib/game/calendar.ts';
 import { CARD_SIZES, isValidLayout, type CardSize } from '#lib/game/card-layout.ts';
@@ -19,7 +20,6 @@ import { listHabits, type Habit } from '#lib/server/habits.ts';
 
 const EDIT_WINDOW_MS = 48 * 3_600_000;
 
-export type Rewards = { bingo: string; sixty: string; blackout: string };
 type WeekStart = 'monday' | 'sunday';
 
 export type CardSquare =

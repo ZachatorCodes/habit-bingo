@@ -16,15 +16,13 @@ import { requireUser } from '#lib/server/auth/guards.ts';
 import {
 	STEPS,
 	canOpen,
-	discardDraft,
 	firstOpenStep,
-	getDraft,
-	saveDraft,
 	stepsFor,
 	withHabits,
 	type CardDraft,
 	type Step
-} from '#lib/server/card-drafts.ts';
+} from '#lib/game/card-draft.ts';
+import { discardDraft, getDraft, saveDraft } from '#lib/server/card-drafts.ts';
 import { localDate } from '#lib/server/clock.ts';
 import {
 	currentMonth,

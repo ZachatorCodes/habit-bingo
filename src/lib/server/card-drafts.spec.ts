@@ -4,19 +4,8 @@ import type { Db } from '#lib/server/db/client.ts';
 import type { Card } from '#lib/server/cards.ts';
 import { cardDraft, user } from '#lib/server/db/schema.ts';
 import { createTestDb } from '#lib/server/db/test-db.ts';
-import {
-	STEPS,
-	type Step,
-	canOpen,
-	discardDraft,
-	draftFromCard,
-	emptyDraft,
-	firstOpenStep,
-	getDraft,
-	saveDraft,
-	stepsFor,
-	withHabits
-} from './card-drafts';
+import { emptyDraft } from '#lib/game/card-draft.ts';
+import { discardDraft, draftFromCard, getDraft, saveDraft } from './card-drafts';
 
 let db: Db;
 let userId: string;
@@ -76,46 +65,6 @@ describe('card drafts', () => {
 		await db.insert(cardDraft).values({ userId, month: '2026-10', data: { size: 7, nonsense: 1 } });
 		expect(await getDraft(db, userId, '2026-10')).toEqual(emptyDraft('2026-10'));
 		expect(await db.select().from(cardDraft).where(eq(cardDraft.userId, userId))).toHaveLength(0);
-	});
-
-	it('orders steps and finds the first open one', () => {
-		expect(STEPS).toEqual(['size', 'habits', 'targets', 'rewards', 'board']);
-		const draft = emptyDraft('2026-10');
-		expect(stepsFor(draft)).toEqual([...STEPS]);
-		expect(firstOpenStep(draft)).toBe('size');
-		expect(canOpen(draft, 'size')).toBe(true);
-		expect(canOpen(draft, 'habits')).toBe(false);
-
-		const done = {
-			...draft,
-			completed: ['size', 'habits'] as Step[]
-		};
-		expect(firstOpenStep(done)).toBe('targets');
-		expect(canOpen(done, 'targets')).toBe(true);
-		expect(canOpen(done, 'rewards')).toBe(false);
-		expect(firstOpenStep({ ...done, completed: [...STEPS] })).toBe('board');
-
-		const editing = { ...draft, cardId: 'card-1' };
-		expect(stepsFor(editing)).toEqual(['habits', 'targets', 'rewards', 'board']);
-		expect(firstOpenStep(editing)).toBe('habits');
-		expect(canOpen(editing, 'habits')).toBe(true);
-		expect(canOpen(editing, 'targets')).toBe(false);
-	});
-
-	it('changing habits drops their overrides and the layout', () => {
-		const draft = {
-			...emptyDraft('2026-10'),
-			habitIds: ['a', 'b', 'c'],
-			targets: { a: 2, b: 3 },
-			layout: ['a', 'b', 'c']
-		};
-		const same = withHabits(draft, ['c', 'b', 'a']);
-		expect(same.layout).toEqual(['a', 'b', 'c']);
-		expect(same.habitIds).toEqual(['c', 'b', 'a']);
-		const changed = withHabits(draft, ['a', 'c', 'd']);
-		expect(changed.targets).toEqual({ a: 2 });
-		expect(changed.layout).toBeNull();
-		expect(changed.habitIds).toEqual(['a', 'c', 'd']);
 	});
 
 	it('draftFromCard round-trips a card into a complete editing draft', () => {

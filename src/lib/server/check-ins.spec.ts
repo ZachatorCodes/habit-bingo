@@ -5,7 +5,8 @@ import { evaluateSquare } from '#lib/game/evaluate.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { checkIn, feedEvent, reaction, user } from '#lib/server/db/schema.ts';
 import { createTestDb } from '#lib/server/db/test-db.ts';
-import { startCard, updateCard, type Card, type CardPlan, type Rewards } from './cards';
+import type { Rewards } from '#lib/game/types.ts';
+import { startCard, updateCard, type Card, type CardPlan } from './cards';
 import { getCheckIns, logCheckIn, MAX_COUNT, setCheckIn } from './check-ins';
 import { createHabit, updateHabit, type Habit } from './habits';
 

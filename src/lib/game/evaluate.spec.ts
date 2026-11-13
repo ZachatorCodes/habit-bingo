@@ -148,7 +148,7 @@ describe('atLeast / week', () => {
 		const sundayStart: CardSpan = { startDate: '2026-10-18', weekStartsOn: 'monday' };
 		expect(
 			evaluateSquare(gym, sundayStart, counts({ '2026-10-18': 1 }), '2026-10-18')
-		).toMatchObject({ state: 'held', counting: true });
+		).toMatchObject({ state: 'held', counting: false });
 	});
 
 	it('is empty until a week is met, the current week included', () => {
@@ -159,7 +159,7 @@ describe('atLeast / week', () => {
 		const met = counts(range('2026-10-01', '2026-10-02'));
 		expect(evaluateSquare(gym, span, met, '2026-10-02')).toMatchObject({
 			state: 'held',
-			counting: true
+			counting: false
 		});
 	});
 });
@@ -167,7 +167,7 @@ describe('atLeast / week', () => {
 describe('when protect squares count', () => {
 	const walk = rule('atLeast', 'day', 'times', 1);
 
-	it('"every day" is empty until a day is met, then counts overnight', () => {
+	it('"every day" is empty until a day is met, then held', () => {
 		expect(evaluateSquare(walk, span, counts({}), '2026-10-01')).toEqual({
 			state: 'empty',
 			progress: 0,
@@ -176,11 +176,11 @@ describe('when protect squares count', () => {
 		const first = counts({ '2026-10-01': 1 });
 		expect(evaluateSquare(walk, span, first, '2026-10-01')).toMatchObject({
 			state: 'held',
-			counting: true
+			counting: false
 		});
 		expect(evaluateSquare(walk, span, first, '2026-10-02')).toMatchObject({
 			state: 'held',
-			counting: true
+			counting: false
 		});
 	});
 
@@ -274,4 +274,27 @@ it('ignores dates after today', () => {
 	const read = rule('atLeast', 'month', 'days', 4);
 	const later = counts(range('2026-10-21', '2026-10-25'));
 	expect(evaluateSquare(read, span, later, TODAY).state).toBe('empty');
+});
+
+describe('only completed squares count before the month is over', () => {
+	it('"every day" and "every week" squares count only after the last card day', () => {
+		const walk = rule('atLeast', 'day', 'times', 1);
+		const everyDay = counts(range('2026-10-01', '2026-10-31'));
+		expect(evaluateSquare(walk, span, everyDay, '2026-10-31')).toMatchObject({
+			state: 'held',
+			counting: false
+		});
+		expect(evaluateSquare(walk, span, everyDay, '2026-11-01').counting).toBe(true);
+		const gym = rule('atLeast', 'week', 'days', 1);
+		expect(evaluateSquare(gym, span, everyDay, '2026-10-31').counting).toBe(false);
+		expect(evaluateSquare(gym, span, everyDay, '2026-11-01').counting).toBe(true);
+	});
+
+	it('a lost "every day" square never counts', () => {
+		const walk = rule('atLeast', 'day', 'times', 1);
+		expect(evaluateSquare(walk, span, counts({ '2026-10-01': 1 }), '2026-11-01')).toMatchObject({
+			state: 'lost',
+			counting: false
+		});
+	});
 });

@@ -15,8 +15,8 @@ function seeded(seed: number) {
 describe('card sizes', () => {
 	it('sizes match the spec', () => {
 		expect(CARD_SIZES).toEqual({
-			3: { habits: 8, squares: 9, multiplier: 1, sixtyThreshold: 5, centerPosition: 4 },
-			5: { habits: 24, squares: 25, multiplier: 2, sixtyThreshold: 15, centerPosition: 12 }
+			3: { habits: 8, squares: 9, sixtyThreshold: 5, centerPosition: 4 },
+			5: { habits: 24, squares: 25, sixtyThreshold: 12, centerPosition: 12 }
 		});
 		expect(isCardSize(3)).toBe(true);
 		expect(isCardSize(5)).toBe(true);

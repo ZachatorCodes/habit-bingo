@@ -23,8 +23,8 @@ export function progressBetween(rule: HabitRule, counts: Counts, from: string, t
 /**
  * A square's state for `today` (spec §3.5): earn squares go empty → inProgress → complete; protect
  * squares start held and turn atRisk or lost. `progress` (0–1) is shown for earn squares only.
- * `counting`: whether it counts toward lines, tiers and points now; "at most" squares only count
- * once the month is over. Check-ins after `today` or before the card started are ignored.
+ * `counting`: whether it counts toward lines and tiers now; only complete monthly goals count
+ * before the month is over. Check-ins after `today` or before the card started are ignored.
  */
 export function evaluateSquare(
 	rule: HabitRule,
@@ -40,8 +40,8 @@ export function evaluateSquare(
 		return { state, progress: Math.min(k, rule.target) / rule.target, counting: counts(state) };
 	}
 	const state = protectState(rule, span, checkIns, today, end);
-	const pending = rule.direction === 'atMost' && today <= monthEnd;
-	return { state, progress: 0, counting: counts(state) && !pending };
+	// Only a completed square counts mid-month; the rest count once the month is over.
+	return { state, progress: 0, counting: counts(state) && today > monthEnd };
 }
 
 function protectState(

@@ -123,9 +123,10 @@
 <Hero
 	title={data.name ? `${greeting(data.hour)}, ${data.name}` : greeting(data.hour)}
 	summary={data.card ? todaySummary(data.card.sections.doToday.length) : 'No card yet'}
+	wideSummary={false}
 >
 	{#if !data.buildCard}
-		<div class="mt-2 text-right">
+		<div class="mt-2 text-right lg:hidden">
 			<a
 				href={resolve('/(app)/card')}
 				class="inline-flex min-h-11 items-center text-[13px] font-semibold underline underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-surface"
@@ -261,10 +262,17 @@
 		<!-- The card beside the list on wide screens (spec §3). -->
 		<section aria-label="Your card" class="hidden self-start lg:sticky lg:top-4 lg:block">
 			{#if data.board}
-				<p class="mb-3 text-[26px] leading-none font-extrabold text-forest tabular-nums">
-					{data.board.score.points}<span class="ml-1 text-xs font-semibold text-muted">pts</span>
-				</p>
-				<CardBoard size={data.board.size} squares={data.board.squares} onopen={openSheet} />
+				<CardBoard size={data.board.size} squares={data.board.squares} onopen={openSheet} large />
+				<div class="mt-3 flex items-baseline justify-between gap-3">
+					<p class="text-[26px] leading-none font-extrabold text-forest tabular-nums">
+						{data.board.score.points}<span class="ml-1 text-xs font-semibold text-muted">pts</span>
+					</p>
+					<a
+						href={resolve('/(app)/card')}
+						class="inline-flex min-h-11 items-center font-bold text-forest underline-offset-4 hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
+						>See your {data.monthName} card</a
+					>
+				</div>
 			{/if}
 			{#if data.buildCard}
 				<div class="flex flex-col items-center gap-4 py-8 text-center">

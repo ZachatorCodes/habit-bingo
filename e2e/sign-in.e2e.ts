@@ -7,7 +7,10 @@ const ADMIN = { username: 'e2e_admin', password: 'e2e admin password 1' };
 test('members sign in and reach Today', async ({ page }) => {
 	await signIn(page, MEMBER.username, MEMBER.password);
 	await expect(page).toHaveURL(/\/today$/);
-	await expect(page.getByText('No card yet')).toBeVisible();
+	// The header says "No card yet" below 1024px; the prompt shows at every width.
+	await expect(
+		page.getByText("Build this month's card to start checking in.").filter({ visible: true })
+	).toBeVisible();
 	await expect(page.getByRole('main')).toHaveCount(1);
 	const nav = page.getByRole('navigation', { name: 'Main' });
 	await expect(nav.getByRole('link', { name: 'Today' })).toHaveAttribute('href', '/today');

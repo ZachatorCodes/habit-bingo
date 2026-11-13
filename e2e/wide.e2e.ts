@@ -293,3 +293,88 @@ test('landing band pads for the notch', async ({ page }, info) => {
 	const h1 = (await page.getByRole('heading', { level: 1 }).boundingBox())!;
 	expect(h1.y).toBeGreaterThanOrEqual(40 + 80);
 });
+
+/** The page header and the content panel right after it, as boxes. */
+async function headerAndPanel(page: Page) {
+	const header = (await page.locator('main header').first().boundingBox())!;
+	const panel = (await page.locator('main header + section').first().boundingBox())!;
+	return { header, panel };
+}
+
+test('today header at desktop: a 40px title, no summary or card link, as wide as the content', async ({
+	page
+}, info) => {
+	test.skip(info.project.name !== 'desktop');
+	await newMemberWithHabits(page, 8);
+	await setClock(page, '2026-10-15T12:00:00Z');
+	await buildAndStartCard(page);
+	await page.goto('/today');
+	await waitForHydration(page);
+	const header = page.locator('main header').first();
+	await expect(header.getByRole('heading', { level: 1 })).toHaveCSS('font-size', '40px');
+	await expect(header.getByText(/things to do today|All done for today/)).toBeHidden();
+	await expect(header.getByRole('link', { name: /See your \w+ card/ })).toBeHidden();
+	const { header: h, panel } = await headerAndPanel(page);
+	expect(Math.abs(h.x - panel.x)).toBeLessThanOrEqual(1);
+	expect(Math.abs(h.width - panel.width)).toBeLessThanOrEqual(1);
+});
+
+test('today board column at desktop: level with the list, points and card link under it', async ({
+	page
+}, info) => {
+	test.skip(info.project.name !== 'desktop');
+	await newMemberWithHabits(page, 8);
+	await setClock(page, '2026-10-15T12:00:00Z');
+	await buildAndStartCard(page);
+	await page.goto('/today');
+	await waitForHydration(page);
+	const column = page.getByRole('region', { name: 'Your card' });
+	const first = column.locator('xpath=preceding-sibling::*[1]/*[1]');
+	const squares = column.getByRole('img');
+	const top = (await squares.first().boundingBox())!.y;
+	expect(Math.abs(top - (await first.boundingBox())!.y)).toBeLessThanOrEqual(1);
+	const bottom = await squares.evaluateAll((els) =>
+		Math.max(...els.map((el) => el.getBoundingClientRect().bottom))
+	);
+	const points = column.getByText(/^\d+\s*pts$/);
+	const link = column.getByRole('link', { name: 'See your October card' });
+	expect((await points.boundingBox())!.y).toBeGreaterThan(bottom);
+	expect((await link.boundingBox())!.y).toBeGreaterThan(bottom);
+});
+
+test('the shared header is 40px and as wide as a full-width panel at desktop', async ({
+	page
+}, info) => {
+	test.skip(info.project.name !== 'desktop');
+	await newMember(page);
+	// Pages whose content is a narrower grid (Me) line up in their own page PR.
+	for (const path of ['/groups']) {
+		await page.goto(path);
+		await expect(page.locator('main header h1')).toHaveCSS('font-size', '40px');
+		const { header, panel } = await headerAndPanel(page);
+		expect(Math.abs(header.x - panel.x)).toBeLessThanOrEqual(1);
+		expect(Math.abs(header.width - panel.width)).toBeLessThanOrEqual(1);
+	}
+});
+
+test('public pages keep the inset header at desktop', async ({ page }, info) => {
+	test.skip(info.project.name !== 'desktop');
+	await page.goto('/signin');
+	const header = (await page.locator('header').first().boundingBox())!;
+	expect(header.x).toBeGreaterThanOrEqual(16);
+});
+
+test("today's board has bigger icons than the card page at desktop", async ({ page }, info) => {
+	test.skip(info.project.name !== 'desktop');
+	await newMemberWithHabits(page, 8);
+	await setClock(page, '2026-10-15T12:00:00Z');
+	await buildAndStartCard(page);
+	const ringWidth = async (scope: string) =>
+		(await page.locator(`${scope} [role="img"][data-state] svg`).first().boundingBox())!.width;
+	await page.goto('/card');
+	const onCard = await ringWidth('main');
+	await page.goto('/today');
+	const onToday = await ringWidth('section[aria-label="Your card"]');
+	expect(onToday).toBeGreaterThan(onCard);
+	await expectNoHorizontalScroll(page);
+});

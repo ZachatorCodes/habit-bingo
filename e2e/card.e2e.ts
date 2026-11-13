@@ -114,7 +114,10 @@ test('shuffle changes the board but keeps the habits', async ({ page }) => {
 test('Today and the nav lead to the card', async ({ page }) => {
 	await newMemberWithHabits(page, 8);
 	await page.goto('/today');
-	await expect(page.getByText('No card yet')).toBeVisible();
+	// The header says "No card yet" below 1024px; the prompt shows at every width.
+	await expect(
+		page.getByText("Build this month's card to start checking in.").filter({ visible: true })
+	).toBeVisible();
 	await page.getByRole('link', { name: 'Build one' }).click();
 	await expect(page).toHaveURL(/\/card\/build\/size$/);
 

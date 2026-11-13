@@ -1,13 +1,19 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	type Props = { title: string; summary?: string; children?: Snippet };
-	let { title, summary, children }: Props = $props();
+	type Props = {
+		title: string;
+		summary?: string;
+		/** False hides the summary from 1024px up (Today shows that context beside its list). */
+		wideSummary?: boolean;
+		children?: Snippet;
+	};
+	let { title, summary, wideSummary = true, children }: Props = $props();
 </script>
 
 <!-- Bottom padding leaves room for the following sheet to overlap by 18px (-mt-[18px] on the sheet). -->
 <header
-	class="relative overflow-hidden bg-forest px-5 pt-[calc(2rem+var(--safe-top))] pb-12 text-surface md:m-4 md:rounded-[24px]"
+	class="relative overflow-hidden bg-forest px-5 pt-[calc(2rem+var(--safe-top))] pb-12 text-surface md:m-4 md:rounded-[24px] lg:px-8 lg:pb-10 lg:[.app-shell_&]:mx-0"
 >
 	<svg
 		aria-hidden="true"
@@ -24,9 +30,9 @@
 		<path d="M70 70C70 36 46 14 14 14c0 34 18 56 56 56Z" fill="currentColor" />
 	</svg>
 	<div class="relative">
-		<h1 class="text-[28px] leading-tight font-extrabold break-words">{title}</h1>
+		<h1 class="text-[28px] leading-tight font-extrabold break-words lg:text-[40px]">{title}</h1>
 		{#if summary}
-			<p class="mt-1 text-[15px] font-semibold">{summary}</p>
+			<p class={['mt-1 text-[15px] font-semibold', !wideSummary && 'lg:hidden']}>{summary}</p>
 		{/if}
 		{@render children?.()}
 	</div>

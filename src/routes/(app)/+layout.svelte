@@ -42,7 +42,8 @@
 </nav>
 
 <main class="flex-1 md:ml-[var(--sidebar)]">
-	<div class="lg:mx-auto lg:max-w-[1200px]">
+	<!-- `app-shell` lets the page header line up with full-width panels here, not on public pages. -->
+	<div class="app-shell lg:mx-auto lg:max-w-[1200px]">
 		{@render children()}
 	</div>
 </main>

@@ -8,7 +8,7 @@ import {
 	nextTier,
 	reachedTiers,
 	scoreCard,
-	squarePoints,
+	squareCompletion,
 	squaresToLine
 } from './score.ts';
 import type { SquareState } from './square-state.ts';
@@ -88,30 +88,29 @@ describe('reachedTiers', () => {
 	});
 });
 
-describe('squarePoints', () => {
+describe('squareCompletion', () => {
 	const TODAY = '2026-10-20';
 
-	it('earn points are proportional and capped', () => {
+	it('monthly goals: progress over the target, capped', () => {
 		const read = rule('atLeast', 'month', 'days', 4);
 		const two = days({ '2026-10-02': 1, '2026-10-03': 1 });
-		expect(squarePoints(read, span, two, TODAY, 'inProgress')).toBe(5);
+		expect(squareCompletion(read, span, two, TODAY, 'inProgress')).toBe(0.5);
 		const six = days(
 			Object.fromEntries(['01', '02', '03', '04', '05', '06'].map((d) => [`2026-10-${d}`, 1]))
 		);
-		expect(squarePoints(read, span, six, TODAY, 'complete')).toBe(10);
+		expect(squareCompletion(read, span, six, TODAY, 'complete')).toBe(1);
 	});
 
-	it('atLeast / day points over the whole span', () => {
+	it('a perfect daily habit is 15/31 complete on Oct 15, extra logs capped', () => {
 		const walk = rule('atLeast', 'day', 'times', 2);
-		// 10 days fully met (2 each) and one day half met, of 31 days × N = 2.
 		const met: Record<string, number> = {};
-		for (let d = 1; d <= 10; d++) met[`2026-10-${String(d).padStart(2, '0')}`] = 2;
-		met['2026-10-11'] = 1;
-		met['2026-10-12'] = 5; // capped at N
-		expect(squarePoints(walk, span, days(met), TODAY, 'lost')).toBeCloseTo((10 * 23) / 62);
+		for (let d = 1; d <= 15; d++) met[`2026-10-${String(d).padStart(2, '0')}`] = 2;
+		expect(squareCompletion(walk, span, days(met), '2026-10-15', 'held')).toBeCloseTo(15 / 31);
+		met['2026-10-12'] = 5;
+		expect(squareCompletion(walk, span, days(met), '2026-10-15', 'held')).toBeCloseTo(15 / 31);
 	});
 
-	it('atLeast / week points over clipped weeks, and 10 when nothing is required', () => {
+	it('weekly habits over clipped weeks, and 1 when nothing is required', () => {
 		const gym = rule('atLeast', 'week', 'days', 3);
 		// Weeks of October require 2, 3, 3, 3, 3 = 14; 2 + 3 met.
 		const counted = days({
@@ -122,104 +121,90 @@ describe('squarePoints', () => {
 			'2026-10-07': 1,
 			'2026-10-08': 1
 		});
-		expect(squarePoints(gym, span, counted, TODAY, 'atRisk')).toBeCloseTo((10 * 5) / 14);
+		expect(squareCompletion(gym, span, counted, TODAY, 'atRisk')).toBeCloseTo(5 / 14);
 		const stub: CardSpan = { startDate: '2026-10-31', weekStartsOn: 'monday' };
 		expect(
-			squarePoints(rule('atLeast', 'week', 'times', 1), stub, days({}), '2026-10-31', 'held')
-		).toBe(10);
+			squareCompletion(rule('atLeast', 'week', 'times', 1), stub, days({}), '2026-10-31', 'held')
+		).toBe(1);
 	});
 
-	it('a limit of 0 pays for each finished clean day', () => {
+	it('a limit of 0 fills a share for each finished clean day', () => {
 		const none = rule('atMost', 'month', 'days', 0);
-		expect(squarePoints(none, span, days({}), '2026-10-15', 'held')).toBeCloseTo((10 * 14) / 31);
-		expect(squarePoints(none, span, days({}), '2026-11-01', 'held')).toBe(10);
-		expect(squarePoints(none, span, days({}), '2026-11-20', 'held')).toBe(10);
+		expect(squareCompletion(none, span, days({}), '2026-10-15', 'held')).toBeCloseTo(14 / 31);
+		expect(squareCompletion(none, span, days({}), '2026-11-01', 'held')).toBe(1);
+		expect(squareCompletion(none, span, days({}), '2026-11-20', 'held')).toBe(1);
 	});
 
-	it('a slip day pays nothing; the clean days are kept', () => {
-		const none = rule('atMost', 'month', 'days', 0);
-		const slip = days({ '2026-10-21': 1 });
-		expect(squarePoints(none, span, slip, '2026-11-01', 'lost')).toBeCloseTo((10 * 30) / 31);
-	});
-
-	it('a daily limit pays for each finished day within it', () => {
+	it('a daily limit fills for each finished day within it', () => {
 		const coffee = rule('atMost', 'day', 'times', 2);
 		const log = days({ '2026-10-01': 3, '2026-10-02': 2 });
-		expect(squarePoints(coffee, span, log, '2026-10-03', 'lost')).toBeCloseTo(10 / 31);
+		expect(squareCompletion(coffee, span, log, '2026-10-03', 'atRisk')).toBeCloseTo(1 / 31);
+		// Oct 3 had none: within.
+		expect(squareCompletion(coffee, span, log, '2026-10-04', 'atRisk')).toBeCloseTo(2 / 31);
 	});
 
-	it('a weekly limit of 0 pays per clean day too', () => {
-		const none = rule('atMost', 'week', 'days', 0);
-		expect(squarePoints(none, span, days({ '2026-10-02': 1 }), '2026-10-04', 'lost')).toBeCloseTo(
-			(10 * 2) / 31
-		);
+	it('a monthly limit above 0 fills while the running total is within it', () => {
+		const eatOut = rule('atMost', 'month', 'times', 3);
+		const log = days({ '2026-10-02': 2, '2026-10-05': 2 });
+		// Oct 1–4 are within (running total ≤ 3); from Oct 5 the total is 4.
+		expect(squareCompletion(eatOut, span, log, '2026-10-10', 'held')).toBeCloseTo(4 / 31);
 	});
 
-	it('a card started late pays over its own days', () => {
+	it("a weekly limit above 0 fills while that week's running total is within it", () => {
+		const naps = rule('atMost', 'week', 'days', 1);
+		// The week of Oct 5 goes over on Oct 7: Oct 1–6 are within.
+		const log = days({ '2026-10-06': 1, '2026-10-07': 1 });
+		expect(squareCompletion(naps, span, log, '2026-10-09', 'held')).toBeCloseTo(6 / 31);
+	});
+
+	it('a card started late counts over its own days', () => {
 		const none = rule('atMost', 'month', 'days', 0);
 		const late: CardSpan = { startDate: '2026-10-20', weekStartsOn: 'monday' };
-		expect(squarePoints(none, late, days({}), '2026-10-25', 'held')).toBeCloseTo((10 * 5) / 12);
-		expect(squarePoints(none, late, days({}), '2026-11-01', 'held')).toBe(10);
+		expect(squareCompletion(none, late, days({}), '2026-10-25', 'held')).toBeCloseTo(5 / 12);
+		expect(squareCompletion(none, late, days({}), '2026-11-01', 'held')).toBe(1);
 	});
 
-	it('atMost squares are worth 10 once the month is over, unless lost', () => {
-		const naps = rule('atMost', 'month', 'days', 3);
-		expect(squarePoints(naps, span, days({}), TODAY, 'held')).toBe(0);
-		expect(squarePoints(naps, span, days({}), '2026-10-31', 'held')).toBe(0);
-		expect(squarePoints(naps, span, days({}), '2026-11-01', 'held')).toBe(10);
-		expect(squarePoints(naps, span, days({}), '2026-11-01', 'atRisk')).toBe(10);
-		expect(squarePoints(naps, span, days({}), '2026-11-01', 'lost')).toBe(0);
+	it('a lost square counts nothing, whatever it had', () => {
+		const read = rule('atLeast', 'month', 'days', 1);
+		const walk = rule('atLeast', 'day', 'times', 1);
+		const none = rule('atMost', 'month', 'days', 0);
+		expect(squareCompletion(walk, span, days({ '2026-10-01': 1 }), TODAY, 'lost')).toBe(0);
+		expect(squareCompletion(none, span, days({ '2026-10-05': 1 }), TODAY, 'lost')).toBe(0);
+		expect(squareCompletion(read, span, days({ '2026-10-01': 1 }), TODAY, 'lost')).toBe(0);
 	});
 });
 
 describe('scoreCard', () => {
-	const square = (state: SquareState, points = 10, counting = counts(state)) => ({
-		state,
-		points,
+	const square = (state: SquareState, completion = 1, counting = counts(state)) => ({
+		completion,
 		counting
 	});
 
-	it('squares that do not count yet make no lines or tiers', () => {
+	it('has no points; squares that do not count yet make no lines or tiers', () => {
 		const pending = [...Array(4)].map(() => square('held', 0, false));
-		const card = [...pending, square('free', 0), ...pending];
-		expect(scoreCard(3, card)).toMatchObject({ counting: 1, lines: [], tiers: [], points: 0 });
+		const score = scoreCard(3, [...pending, square('free', 0), ...pending]);
+		expect(score).toEqual({ counting: 1, percent: 0, lines: [], tiers: [] });
 	});
 
-	it('blackout totals match the spec examples', () => {
-		const three = [...Array(4)].map(() => square('complete'));
-		const card3 = [...three, square('complete', 0), ...three];
-		expect(scoreCard(3, card3)).toMatchObject({ counting: 9, percent: 100, points: 380 });
-		const twelve = [...Array(12)].map(() => square('held'));
-		const card5 = [...twelve, square('complete', 0), ...twelve];
-		expect(scoreCard(5, card5)).toMatchObject({
-			points: 640,
+	it('a full card is 100% with every line and tier', () => {
+		const four = [...Array(4)].map(() => square('complete'));
+		const card = [...four, square('free', 0), ...four];
+		expect(scoreCard(3, card)).toMatchObject({
+			counting: 9,
+			percent: 100,
 			tiers: ['bingo', 'sixtyPercent', 'blackout']
 		});
+		expect(scoreCard(3, card).lines).toHaveLength(8);
 	});
 
-	it('rounds once at the end', () => {
+	it('percent averages habit square completion, rounded once', () => {
 		const card = [
-			square('inProgress', 3.4),
-			square('inProgress', 3.4),
-			...[...Array(7)].map(() => square('empty', 0))
-		];
-		expect(scoreCard(3, card)).toMatchObject({
-			counting: 0,
-			percent: 9,
-			lines: [],
-			tiers: [],
-			points: 7
-		});
-	});
-
-	it('percent is progress: habit square points out of 10, averaged', () => {
-		const card = [
-			...[...Array(4)].map(() => square('complete', 10)),
+			...[...Array(4)].map(() => square('complete', 1)),
 			square('free', 0),
-			...[...Array(4)].map(() => square('inProgress', 5))
+			...[...Array(4)].map(() => square('inProgress', 0.5))
 		];
 		expect(scoreCard(3, card).percent).toBe(75);
-		const third = [square('inProgress', 10 / 3), ...[...Array(8)].map(() => square('empty', 0))];
+		const third = [square('inProgress', 1 / 3), ...[...Array(8)].map(() => square('empty', 0))];
 		expect(scoreCard(3, third).percent).toBe(4);
 	});
 });

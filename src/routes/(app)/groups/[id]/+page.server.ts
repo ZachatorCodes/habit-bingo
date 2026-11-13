@@ -1,4 +1,4 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail, redirect, type Cookies } from '@sveltejs/kit';
 import { requireUser } from '#lib/server/auth/guards.ts';
 
 import { requestClock, requireDb } from '#lib/server/request.ts';
@@ -7,6 +7,7 @@ import {
 	getMembership,
 	leaveGroup,
 	listMembers,
+	nextOwner,
 	removeMember,
 	resetInvite
 } from '#lib/server/groups.ts';
@@ -27,7 +28,7 @@ export const load: PageServerLoad = async ({ locals, cookies, params, url }) => 
 	const feed = await groupFeed(db, user.id, params.id, url.searchParams.get('before') ?? undefined);
 	const leaderboard = await groupBoard(db, user.id, params.id, now);
 	if (!leaderboard || !feed) error(404, 'Not found');
-	const heir = members.find((m) => m.userId !== user.id);
+	const heir = nextOwner(members, user.id);
 	return {
 		group: membership.group,
 		isOwner: membership.role === 'owner',
@@ -49,6 +50,14 @@ export const load: PageServerLoad = async ({ locals, cookies, params, url }) => 
 	};
 };
 
+/** The signed-in member and the database; anyone not in the group gets a 404. */
+async function requireMember(locals: App.Locals, cookies: Cookies, groupId: string) {
+	const user = requireUser(locals);
+	const db = requireDb(UNAVAILABLE);
+	if (!(await getMembership(db, user.id, groupId, requestClock(cookies)))) error(404, 'Not found');
+	return { user, db };
+}
+
 export const actions: Actions = {
 	react: async ({ locals, request }) => {
 		const user = requireUser(locals);
@@ -62,29 +71,20 @@ export const actions: Actions = {
 		if (result === 'badIcon') return fail(400, { message: 'Pick a reaction.' });
 	},
 	leave: async ({ locals, cookies, params }) => {
-		const user = requireUser(locals);
-		const db = requireDb(UNAVAILABLE);
-		if (!(await getMembership(db, user.id, params.id, requestClock(cookies))))
-			error(404, 'Not found');
+		const { user, db } = await requireMember(locals, cookies, params.id);
 		const result = await leaveGroup(db, user.id, params.id, requestClock(cookies));
 		if (!result) error(404, 'Not found');
 		redirect(303, '/groups');
 	},
 	remove: async ({ locals, cookies, params, request }) => {
-		const user = requireUser(locals);
-		const db = requireDb(UNAVAILABLE);
-		if (!(await getMembership(db, user.id, params.id, requestClock(cookies))))
-			error(404, 'Not found');
+		const { user, db } = await requireMember(locals, cookies, params.id);
 		const memberId = (await request.formData()).get('userId');
 		if (typeof memberId !== 'string' || !(await removeMember(db, user.id, params.id, memberId)))
 			error(404, 'Not found');
 		redirect(303, `/groups/${params.id}?tab=members`);
 	},
 	reset: async ({ locals, cookies, params }) => {
-		const user = requireUser(locals);
-		const db = requireDb(UNAVAILABLE);
-		if (!(await getMembership(db, user.id, params.id, requestClock(cookies))))
-			error(404, 'Not found');
+		const { user, db } = await requireMember(locals, cookies, params.id);
 		if (!(await resetInvite(db, user.id, params.id, requestClock(cookies))))
 			error(404, 'Not found');
 		redirect(303, `/groups/${params.id}?tab=members`);

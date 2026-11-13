@@ -5,6 +5,7 @@ import { group, invite, user } from '#lib/server/db/schema.ts';
 import { createTestDb } from '#lib/server/db/test-db.ts';
 import { createTestAuth } from './test-auth.ts';
 import {
+	validateInviteInput,
 	consumeInvite,
 	createInvite,
 	deleteInvite,
@@ -186,5 +187,31 @@ describe('getJoinStatus', () => {
 		const [row] = await empty.select().from(user).where(eq(user.id, first.id));
 		expect(row.isAdmin).toBe(true);
 		expect(await getJoinStatus(empty, BOOTSTRAP, NOW, BOOTSTRAP)).toBe('notFound');
+	});
+});
+
+describe('validateInviteInput', () => {
+	it('accepts whole numbers within the limits', () => {
+		expect(validateInviteInput({ expiresInDays: '7', maxUses: '50' })).toEqual({
+			ok: true,
+			value: { expiresInDays: 7, maxUses: 50 }
+		});
+	});
+
+	it('reports each field out of range', () => {
+		expect(validateInviteInput({ expiresInDays: '31', maxUses: '1.5' })).toEqual({
+			ok: false,
+			errors: {
+				expiresInDays: 'Choose between 1 and 30 days.',
+				maxUses: 'Choose between 1 and 50 uses.'
+			}
+		});
+		expect(validateInviteInput({ expiresInDays: '0', maxUses: '1' })).toEqual({
+			ok: false,
+			errors: { expiresInDays: 'Choose between 1 and 30 days.' }
+		});
+		expect(validateInviteInput({ expiresInDays: '1000', maxUses: '' })).toMatchObject({
+			ok: false
+		});
 	});
 });

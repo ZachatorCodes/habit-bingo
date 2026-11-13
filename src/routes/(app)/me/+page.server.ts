@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '$app/env/private';
 import { AVATAR_ICONS } from '#lib/icons.ts';
-import type { WeekStart } from '#lib/profile.ts';
+import { deleteConfirmed, timezoneOptions, type WeekStart } from '#lib/profile.ts';
 import {
 	changeUserPassword,
 	deleteAccount,
@@ -27,12 +27,6 @@ const UNAVAILABLE = 'Your account is not available right now.';
 const DELETE_MISMATCH_MESSAGE = "That doesn't match your username.";
 
 const googleEnabled = () => Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
-
-/** Every zone this server knows, with UTC first, plus the user's own if it has gone missing. */
-function timezoneOptions(current: string): string[] {
-	const zones = ['UTC', ...Intl.supportedValuesOf('timeZone').filter((z) => z !== 'UTC')];
-	return zones.includes(current) ? zones : [current, ...zones];
-}
 
 /** A failed action: which section it came from, the safe values to refill and the field errors. */
 function failed(
@@ -145,9 +139,7 @@ export const actions: Actions = {
 		const user = requireUser(locals);
 		const db = requireDb(UNAVAILABLE);
 		const text = await readForm(request);
-		const typed = text('confirmUsername').trim().replace(/^@/, '').toLowerCase();
-		const expected = (user.username ?? user.displayUsername ?? '').toLowerCase();
-		if (!expected || typed !== expected)
+		if (!deleteConfirmed(text('confirmUsername'), user))
 			return failed('delete', 'confirmUsername', DELETE_MISMATCH_MESSAGE);
 		await deleteAccount(db, user.id);
 		// The session rows went with the user; this clears the cookies on our response.

@@ -1,10 +1,9 @@
 // Card-builder progress, saved after every step so closing the tab loses nothing. One draft per
 // person; a draft from another month is forgotten, since the month decides which card it builds.
 import { and, eq, lt } from 'drizzle-orm';
-import * as z from 'zod';
 import {
-	STEPS,
 	emptyDraft,
+	parseDraft,
 	stepsFor,
 	type CardDraft,
 	type PickedHabit
@@ -14,17 +13,6 @@ import { listHabits } from '#lib/server/habits.ts';
 import type { Card } from '#lib/server/cards.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { cardDraft } from '#lib/server/db/schema.ts';
-
-const draftSchema = z.object({
-	month: z.string(),
-	cardId: z.string().nullable(),
-	size: z.union([z.literal(3), z.literal(5)]).nullable(),
-	habitIds: z.array(z.string()),
-	targets: z.record(z.string(), z.number()),
-	rewards: z.object({ bingo: z.string(), sixty: z.string(), blackout: z.string() }),
-	layout: z.array(z.string().nullable()).nullable(),
-	completed: z.array(z.enum(STEPS))
-});
 
 /**
  * The draft for `month`. Drafts for months before `currentMonth` (the person's own month; the
@@ -44,8 +32,8 @@ export async function getDraft(
 		.from(cardDraft)
 		.where(and(eq(cardDraft.userId, userId), eq(cardDraft.month, month)));
 	if (!row) return emptyDraft(month);
-	const parsed = draftSchema.safeParse(row.data);
-	if (parsed.success && parsed.data.month === month) return parsed.data;
+	const parsed = parseDraft(row.data);
+	if (parsed && parsed.month === month) return parsed;
 	await discardDraft(db, userId, month);
 	return emptyDraft(month);
 }

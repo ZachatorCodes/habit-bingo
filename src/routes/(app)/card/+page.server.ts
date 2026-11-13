@@ -3,10 +3,9 @@ import { daysLeftInMonth, monthName } from '#lib/game/calendar.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { draftFromCard, getDraft, saveDraft } from '#lib/server/card-drafts.ts';
 import { currentMonth, getCard, isEditable } from '#lib/server/cards.ts';
-import { TEST_CLOCK } from '$app/env/private';
 import { cardView } from '#lib/server/card-view.ts';
-import { formatEditDeadline, localDate, requestNow } from '#lib/server/clock.ts';
-import { personOf, requireDb } from '#lib/server/request.ts';
+import { formatEditDeadline, localDate } from '#lib/server/clock.ts';
+import { personOf, requestClock, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Your card is not available right now.';
@@ -17,7 +16,7 @@ export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	void url.searchParams.get('refresh');
 	const db = requireDb(UNAVAILABLE);
 	const timezone = personOf(user).timezone;
-	const now = requestNow(cookies, TEST_CLOCK);
+	const now = requestClock(cookies);
 	const month = currentMonth({ timezone }, now);
 	const [card, draft] = await Promise.all([
 		getCard(db, user.id, month),
@@ -58,7 +57,7 @@ export const actions: Actions = {
 	edit: async ({ locals, cookies }) => {
 		const user = requireUser(locals);
 		const db = requireDb(UNAVAILABLE);
-		const now = requestNow(cookies, TEST_CLOCK);
+		const now = requestClock(cookies);
 		const card = await getCard(
 			db,
 			user.id,

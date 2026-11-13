@@ -1,8 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { TEST_CLOCK } from '$app/env/private';
 import { requireUser } from '#lib/server/auth/guards.ts';
-import { requestNow } from '#lib/server/clock.ts';
-import { requireDb } from '#lib/server/request.ts';
+
+import { requestClock, requireDb } from '#lib/server/request.ts';
 import { getMembership, updateGroup } from '#lib/server/groups.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -15,7 +14,7 @@ export const load: PageServerLoad = async ({ locals, cookies, params }) => {
 		requireDb(UNAVAILABLE),
 		user.id,
 		params.id,
-		requestNow(cookies, TEST_CLOCK)
+		requestClock(cookies)
 	);
 	if (membership?.role !== 'owner') error(404, 'Not found');
 	return { group: membership.group };

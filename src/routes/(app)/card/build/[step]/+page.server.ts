@@ -25,8 +25,7 @@ import {
 	type CardDraft,
 	type Step
 } from '#lib/server/card-drafts.ts';
-import { TEST_CLOCK } from '$app/env/private';
-import { localDate, requestNow } from '#lib/server/clock.ts';
+import { localDate } from '#lib/server/clock.ts';
 import {
 	currentMonth,
 	editBlocked,
@@ -37,7 +36,7 @@ import {
 	type Card
 } from '#lib/server/cards.ts';
 import type { Db } from '#lib/server/db/client.ts';
-import { personOf, requireDb } from '#lib/server/request.ts';
+import { personOf, requestClock, requireDb } from '#lib/server/request.ts';
 import { DEFAULT_HABIT_INPUT, readHabitForm } from '#lib/server/habit-form.ts';
 import { createHabit, listHabits, type Habit } from '#lib/server/habits.ts';
 import type { SquareState } from '#lib/game/square-state.ts';
@@ -55,7 +54,7 @@ function isStep(value: string): value is Step {
 async function builderContext(locals: App.Locals, cookies: Cookies, url: URL) {
 	const user = requireUser(locals);
 	const db = requireDb('The card builder is not available right now.');
-	const now = requestNow(cookies, TEST_CLOCK);
+	const now = requestClock(cookies);
 	const current = currentMonth({ timezone: personOf(user).timezone }, now);
 	const forNext = url.searchParams.get('for') === 'next';
 	if (forNext && !canBuildNextMonth(localDate(now, personOf(user).timezone)))

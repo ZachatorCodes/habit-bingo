@@ -1,9 +1,8 @@
-import { TEST_CLOCK } from '$app/env/private';
 import { monthName } from '#lib/game/calendar.ts';
 import { middleReward, type CardSize } from '#lib/game/card-layout.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
-import { localDate, requestNow } from '#lib/server/clock.ts';
-import { personOf, requireDb } from '#lib/server/request.ts';
+import { localDate } from '#lib/server/clock.ts';
+import { personOf, requestClock, requireDb } from '#lib/server/request.ts';
 import { finalizeMonths, listResults } from '#lib/server/month-results.ts';
 import type { PageServerLoad } from './$types';
 
@@ -11,7 +10,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals, cookies }) => {
 	const user = requireUser(locals);
 	const db = requireDb('Your history is not available right now.');
-	const today = localDate(requestNow(cookies, TEST_CLOCK), personOf(user).timezone);
+	const today = localDate(requestClock(cookies), personOf(user).timezone);
 	await finalizeMonths(db, user.id, today);
 	const results = await listResults(db, user.id);
 	return {

@@ -1,5 +1,4 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { TEST_CLOCK } from '$app/env/private';
 import { addDays, lastDayOf, monthOf } from '#lib/game/calendar.ts';
 import { backfillMonths, canLog, loggableDates } from '#lib/game/backfill.ts';
 import { CATEGORIES } from '#lib/game/categories.ts';
@@ -11,8 +10,8 @@ import type { SheetData } from '#lib/components/HabitSheet.svelte';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { getCard } from '#lib/server/cards.ts';
 import { getCheckIns, logCheckIn, setCheckIn } from '#lib/server/check-ins.ts';
-import { localDate, requestNow } from '#lib/server/clock.ts';
-import { personOf, requireDb } from '#lib/server/request.ts';
+import { localDate } from '#lib/server/clock.ts';
+import { personOf, requestClock, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Your card is not available right now.';
@@ -22,7 +21,7 @@ export const load: PageServerLoad = async ({ locals, cookies, params, url }) => 
 	const user = requireUser(locals);
 	const db = requireDb(UNAVAILABLE);
 	const timezone = personOf(user).timezone;
-	const now = requestNow(cookies, TEST_CLOCK);
+	const now = requestClock(cookies);
 	const today = localDate(now, timezone);
 	// This month's card, and on the 1st–3rd last month's too (its days are still open).
 	let card: Awaited<ReturnType<typeof getCard>> = null;
@@ -76,7 +75,7 @@ async function change(
 	const data = await request.formData();
 	const date = String(data.get('date') ?? '');
 	const person = { id: user.id, timezone: personOf(user).timezone };
-	const now = requestNow(cookies, TEST_CLOCK);
+	const now = requestClock(cookies);
 	const result =
 		how === 'set'
 			? await setCheckIn(

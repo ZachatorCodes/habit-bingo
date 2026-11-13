@@ -2,7 +2,6 @@ import { error, fail, redirect, type Cookies } from '@sveltejs/kit';
 import * as z from 'zod';
 import {
 	BOOTSTRAP_INVITE_CODE,
-	TEST_CLOCK,
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
 	IP_LIMIT_MULTIPLIER
@@ -14,8 +13,8 @@ import { getJoinStatus } from '#lib/server/auth/invites.ts';
 import { checkAndRecordIp, TOO_MANY_ATTEMPTS_MESSAGE } from '#lib/server/auth/ip-limit.ts';
 import { checkPassword, PASSWORD_MESSAGES } from '#lib/server/auth/password-policy.ts';
 import { signUpWithPassword, USERNAME_RULES_MESSAGE } from '#lib/server/auth/sign-up.ts';
-import { requestNow } from '#lib/server/clock.ts';
-import { requireDb } from '#lib/server/request.ts';
+
+import { requestClock, requireDb } from '#lib/server/request.ts';
 import { DEAD_LINK_MESSAGE, getMembership, groupForInvite, joinGroup } from '#lib/server/groups.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -58,7 +57,7 @@ function setInviteCookie(cookies: Cookies, code: string) {
 export const load: PageServerLoad = async ({ params, cookies, locals }) => {
 	const db = requireDb('Sign-up is not available right now.');
 	if (locals.user) {
-		const now = requestNow(cookies, TEST_CLOCK);
+		const now = requestClock(cookies);
 		const found = await groupForInvite(db, params.code, now);
 		if (!found) redirect(303, '/today');
 		if (found === 'dead') return { status: 'groupDead' as const, message: DEAD_LINK_MESSAGE };
@@ -78,12 +77,7 @@ export const actions: Actions = {
 	join: async ({ params, cookies, locals }) => {
 		if (!locals.user) redirect(303, `/signin?next=${encodeURIComponent(`/join/${params.code}`)}`);
 		const db = requireDb('Groups are not available right now.');
-		const result = await joinGroup(
-			db,
-			locals.user.id,
-			params.code,
-			requestNow(cookies, TEST_CLOCK)
-		);
+		const result = await joinGroup(db, locals.user.id, params.code, requestClock(cookies));
 		if (!result.ok) return fail(400, { message: result.message });
 		redirect(303, `/groups/${result.groupId}`);
 	},

@@ -2,8 +2,10 @@ import { error, fail } from '@sveltejs/kit';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { createInvite, deleteInvite, listInvites } from '#lib/server/auth/invites.ts';
 import { createResetLink } from '#lib/server/auth/password-reset.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
+
+const UNAVAILABLE = 'Admin is not available right now.';
 
 const INVITE_LIMITS = {
 	expiresInDays: { min: 1, max: 30, default: 7 },
@@ -25,12 +27,6 @@ function requireAdmin(locals: App.Locals) {
 	return user;
 }
 
-function requireDb() {
-	const db = getDb();
-	if (!db) error(503, 'Admin is not available right now.');
-	return db;
-}
-
 async function readForm(request: Request) {
 	const formData = await request.formData();
 	return (key: string) => {
@@ -49,7 +45,7 @@ function whole(value: string, field: keyof typeof INVITE_LIMITS): number | null 
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireAdmin(locals);
-	const db = requireDb();
+	const db = requireDb(UNAVAILABLE);
 	const timeZone = user.timezone ?? 'UTC';
 	const formatDate = new Intl.DateTimeFormat('en-GB', {
 		timeZone,
@@ -73,7 +69,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	createInvite: async ({ request, locals, url }) => {
 		const user = requireAdmin(locals);
-		const db = requireDb();
+		const db = requireDb(UNAVAILABLE);
 		const text = await readForm(request);
 		const values = { expiresInDays: text('expiresInDays'), maxUses: text('maxUses') };
 		const expiresInDays = whole(values.expiresInDays, 'expiresInDays');
@@ -94,7 +90,7 @@ export const actions: Actions = {
 
 	deleteInvite: async ({ request, locals }) => {
 		requireAdmin(locals);
-		const db = requireDb();
+		const db = requireDb(UNAVAILABLE);
 		const code = (await readForm(request))('code');
 		if (!(await deleteInvite(db, code, new Date())))
 			return fail(404, { deleteError: 'That invite was already gone.' });
@@ -103,7 +99,7 @@ export const actions: Actions = {
 
 	resetLink: async ({ request, locals, url }) => {
 		const user = requireAdmin(locals);
-		const db = requireDb();
+		const db = requireDb(UNAVAILABLE);
 		const text = await readForm(request);
 		const values = { username: text('username') };
 		if (!values.username)

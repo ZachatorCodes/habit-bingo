@@ -8,7 +8,7 @@ import { cardView } from '#lib/server/card-view.ts';
 import { getCard } from '#lib/server/cards.ts';
 import { getCheckIns } from '#lib/server/check-ins.ts';
 import { localDate, requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import { finalizeMonths, getResult, markSeen } from '#lib/server/month-results.ts';
 import type { PageServerLoad } from './$types';
 
@@ -16,8 +16,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals, cookies, params }) => {
 	const user = requireUser(locals);
 	if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(params.month)) error(404, 'Not found');
-	const db = getDb();
-	if (!db) error(503, 'Your history is not available right now.');
+	const db = requireDb('Your history is not available right now.');
 	const now = requestNow(cookies, TEST_CLOCK);
 	const today = localDate(now, user.timezone ?? 'UTC');
 	await finalizeMonths(db, user.id, today);

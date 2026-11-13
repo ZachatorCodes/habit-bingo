@@ -36,7 +36,8 @@ import {
 	validateRewards,
 	type Card
 } from '#lib/server/cards.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import type { Db } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import { DEFAULT_HABIT_INPUT, readHabitForm } from '#lib/server/habit-form.ts';
 import { createHabit, listHabits, type Habit } from '#lib/server/habits.ts';
 import type { SquareState } from '#lib/game/square-state.ts';
@@ -53,8 +54,7 @@ function isStep(value: string): value is Step {
  */
 async function builderContext(locals: App.Locals, cookies: Cookies, url: URL) {
 	const user = requireUser(locals);
-	const db = getDb();
-	if (!db) error(503, 'The card builder is not available right now.');
+	const db = requireDb('The card builder is not available right now.');
 	const now = requestNow(cookies, TEST_CLOCK);
 	const current = currentMonth({ timezone: user.timezone ?? 'UTC' }, now);
 	const forNext = url.searchParams.get('for') === 'next';
@@ -131,7 +131,7 @@ function keptSquares(card: Card | null) {
  * it was picked leaves the set short, so the person is sent back to re-pick.
  */
 async function pickedHabits(
-	db: NonNullable<ReturnType<typeof getDb>>,
+	db: Db,
 	userId: string,
 	draft: CardDraft,
 	size: CardSize,

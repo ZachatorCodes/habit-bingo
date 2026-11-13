@@ -1,4 +1,4 @@
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { TEST_CLOCK } from '$app/env/private';
 import { nextMonth } from '#lib/game/calendar.ts';
 import { canBuildNextMonth } from '#lib/game/next-month.ts';
@@ -6,14 +6,13 @@ import { requireUser } from '#lib/server/auth/guards.ts';
 import { currentMonth, getCard } from '#lib/server/cards.ts';
 import { firstOpenStep, getDraft } from '#lib/server/card-drafts.ts';
 import { localDate, requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import type { PageServerLoad } from './$types';
 
 /** Sends the person to the first unfinished step, for this month's card or (`?for=next`) next month's. */
 export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	const user = requireUser(locals);
-	const db = getDb();
-	if (!db) error(503, 'The card builder is not available right now.');
+	const db = requireDb('The card builder is not available right now.');
 	const timezone = user.timezone ?? 'UTC';
 	const now = requestNow(cookies, TEST_CLOCK);
 	const current = currentMonth({ timezone }, now);

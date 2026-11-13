@@ -12,19 +12,15 @@ import { getCard, type Card } from '#lib/server/cards.ts';
 import { cardView } from '#lib/server/card-view.ts';
 import { getCheckIns, logCheckIn, MAX_COUNT } from '#lib/server/check-ins.ts';
 import { localDate, localHour, requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import { finalizeMonths, markSeen, newestUnseen } from '#lib/server/month-results.ts';
 import type { Actions, PageServerLoad } from './$types';
 
-function requireDb() {
-	const db = getDb();
-	if (!db) error(503, 'Today is not available right now.');
-	return db;
-}
+const UNAVAILABLE = 'Today is not available right now.';
 
 export const load: PageServerLoad = async ({ locals, cookies, url }) => {
 	const user = requireUser(locals);
-	const db = requireDb();
+	const db = requireDb(UNAVAILABLE);
 	const timezone = user.timezone ?? 'UTC';
 	const now = requestNow(cookies, TEST_CLOCK);
 	const today = localDate(now, timezone);
@@ -137,7 +133,7 @@ async function log(
 		return typeof value === 'string' ? value : '';
 	};
 	const result = await logCheckIn(
-		requireDb(),
+		requireDb(UNAVAILABLE),
 		{ id: user.id, timezone: user.timezone ?? 'UTC' },
 		field('squareId'),
 		field('date'),
@@ -158,7 +154,7 @@ export const actions: Actions = {
 		const user = requireUser(locals);
 		const month = (await request.formData()).get('month');
 		if (typeof month === 'string') {
-			await markSeen(requireDb(), user.id, month, requestNow(cookies, TEST_CLOCK));
+			await markSeen(requireDb(UNAVAILABLE), user.id, month, requestNow(cookies, TEST_CLOCK));
 		}
 		const day = url.searchParams.get('day');
 		redirect(303, day ? `/today?day=${encodeURIComponent(day)}` : '/today');

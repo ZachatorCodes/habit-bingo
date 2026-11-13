@@ -12,19 +12,15 @@ import { requireUser } from '#lib/server/auth/guards.ts';
 import { getCard } from '#lib/server/cards.ts';
 import { getCheckIns, logCheckIn, setCheckIn } from '#lib/server/check-ins.ts';
 import { localDate, requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
-function requireDb() {
-	const db = getDb();
-	if (!db) error(503, 'Your card is not available right now.');
-	return db;
-}
+const UNAVAILABLE = 'Your card is not available right now.';
 
 /** One square of the person's current card, as the habit sheet shows it (spec §4.6). */
 export const load: PageServerLoad = async ({ locals, cookies, params, url }) => {
 	const user = requireUser(locals);
-	const db = requireDb();
+	const db = requireDb(UNAVAILABLE);
 	const timezone = user.timezone ?? 'UTC';
 	const now = requestNow(cookies, TEST_CLOCK);
 	const today = localDate(now, timezone);
@@ -83,8 +79,22 @@ async function change(
 	const now = requestNow(cookies, TEST_CLOCK);
 	const result =
 		how === 'set'
-			? await setCheckIn(requireDb(), person, params.id, date, Number(data.get('count')), now)
-			: await logCheckIn(requireDb(), person, params.id, date, how === 'log' ? 1 : -1, now);
+			? await setCheckIn(
+					requireDb(UNAVAILABLE),
+					person,
+					params.id,
+					date,
+					Number(data.get('count')),
+					now
+				)
+			: await logCheckIn(
+					requireDb(UNAVAILABLE),
+					person,
+					params.id,
+					date,
+					how === 'log' ? 1 : -1,
+					now
+				);
 	if (result === null) error(404, 'Not found');
 	if (!result.ok) return fail(400, { message: result.message });
 	// Back to the sheet for that day, so a refresh never posts again.

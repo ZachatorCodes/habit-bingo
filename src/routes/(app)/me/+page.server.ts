@@ -19,18 +19,14 @@ import {
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { retireResetLinks } from '#lib/server/auth/password-reset.ts';
 import { getAuth } from '#lib/server/auth/index.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
+
+const UNAVAILABLE = 'Your account is not available right now.';
 
 const DELETE_MISMATCH_MESSAGE = "That doesn't match your username.";
 
 const googleEnabled = () => Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
-
-function requireDb() {
-	const db = getDb();
-	if (!db) error(503, 'Your account is not available right now.');
-	return db;
-}
 
 async function readForm(request: Request) {
 	const formData = await request.formData();
@@ -58,7 +54,7 @@ function failed(
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const user = requireUser(locals);
-	const db = requireDb();
+	const db = requireDb(UNAVAILABLE);
 	const methods = await getSignInMethods(db, user.id);
 	const timezone = user.timezone ?? 'UTC';
 	return {
@@ -80,7 +76,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 export const actions: Actions = {
 	profile: async ({ request, locals }) => {
 		const user = requireUser(locals);
-		const db = requireDb();
+		const db = requireDb(UNAVAILABLE);
 		const text = await readForm(request);
 		const values = { name: text('name'), avatarIcon: text('avatarIcon') };
 		const result = await updateProfile(db, user.id, values);
@@ -90,7 +86,7 @@ export const actions: Actions = {
 
 	settings: async ({ request, locals }) => {
 		const user = requireUser(locals);
-		const db = requireDb();
+		const db = requireDb(UNAVAILABLE);
 		const text = await readForm(request);
 		const values = { timezone: text('timezone'), weekStartsOn: text('weekStartsOn') };
 		const result = await updateSettings(db, user.id, {
@@ -103,7 +99,7 @@ export const actions: Actions = {
 
 	changePassword: async ({ request, locals }) => {
 		const user = requireUser(locals);
-		const db = requireDb();
+		const db = requireDb(UNAVAILABLE);
 		const text = await readForm(request);
 		if (!(await getSignInMethods(db, user.id)).password)
 			return failed('password', 'form', 'You have no password yet. Set one instead.');
@@ -124,21 +120,21 @@ export const actions: Actions = {
 			newPassword: text('newPassword')
 		});
 		if (!result.ok) return failed('password', result.field, result.message);
-		await retireResetLinks(requireDb(), user.id, new Date());
+		await retireResetLinks(requireDb(UNAVAILABLE), user.id, new Date());
 		return { section: 'password', saved: true };
 	},
 
 	linkGoogle: async ({ request, locals }) => {
 		const user = requireUser(locals);
 		if (!googleEnabled()) error(404, 'Google sign-in is not available.');
-		if ((await getSignInMethods(requireDb(), user.id)).google)
+		if ((await getSignInMethods(requireDb(UNAVAILABLE), user.id)).google)
 			return failed('methods', 'google', 'Google is already linked.');
 		redirectToGoogle(await startGoogleLink(getAuth(), request.headers));
 	},
 
 	unlinkGoogle: async ({ request, locals }) => {
 		const user = requireUser(locals);
-		const result = await unlinkGoogle(getAuth(), requireDb(), user.id, request.headers);
+		const result = await unlinkGoogle(getAuth(), requireDb(UNAVAILABLE), user.id, request.headers);
 		if (!result.ok) return failed('methods', result.field, result.message);
 		return { section: 'methods', saved: true };
 	},
@@ -155,7 +151,7 @@ export const actions: Actions = {
 
 	deleteAccount: async ({ request, locals }) => {
 		const user = requireUser(locals);
-		const db = requireDb();
+		const db = requireDb(UNAVAILABLE);
 		const text = await readForm(request);
 		const typed = text('confirmUsername').trim().replace(/^@/, '').toLowerCase();
 		const expected = (user.username ?? user.displayUsername ?? '').toLowerCase();

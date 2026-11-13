@@ -2,7 +2,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { TEST_CLOCK } from '$app/env/private';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import { groupFeed, react } from '#lib/server/feed.ts';
 import {
 	getMembership,
@@ -14,15 +14,11 @@ import {
 import { groupBoard } from '#lib/server/leaderboard.ts';
 import type { Actions, PageServerLoad } from './$types';
 
-function database() {
-	const db = getDb();
-	if (!db) error(503, 'Groups are not available right now.');
-	return db;
-}
+const UNAVAILABLE = 'Groups are not available right now.';
 
 export const load: PageServerLoad = async ({ locals, cookies, params, url }) => {
 	const user = requireUser(locals);
-	const db = database();
+	const db = requireDb(UNAVAILABLE);
 	const now = requestNow(cookies, TEST_CLOCK);
 	const membership = await getMembership(db, user.id, params.id, now);
 	if (!membership) error(404, 'Not found');
@@ -57,7 +53,7 @@ export const load: PageServerLoad = async ({ locals, cookies, params, url }) => 
 export const actions: Actions = {
 	react: async ({ locals, request }) => {
 		const user = requireUser(locals);
-		const db = database();
+		const db = requireDb(UNAVAILABLE);
 		const form = await request.formData();
 		const [eventId, icon] = [form.get('eventId'), form.get('icon')];
 		if (typeof eventId !== 'string' || typeof icon !== 'string')
@@ -68,7 +64,7 @@ export const actions: Actions = {
 	},
 	leave: async ({ locals, cookies, params }) => {
 		const user = requireUser(locals);
-		const db = database();
+		const db = requireDb(UNAVAILABLE);
 		if (!(await getMembership(db, user.id, params.id, requestNow(cookies, TEST_CLOCK))))
 			error(404, 'Not found');
 		const result = await leaveGroup(db, user.id, params.id, requestNow(cookies, TEST_CLOCK));
@@ -77,7 +73,7 @@ export const actions: Actions = {
 	},
 	remove: async ({ locals, cookies, params, request }) => {
 		const user = requireUser(locals);
-		const db = database();
+		const db = requireDb(UNAVAILABLE);
 		if (!(await getMembership(db, user.id, params.id, requestNow(cookies, TEST_CLOCK))))
 			error(404, 'Not found');
 		const memberId = (await request.formData()).get('userId');
@@ -87,7 +83,7 @@ export const actions: Actions = {
 	},
 	reset: async ({ locals, cookies, params }) => {
 		const user = requireUser(locals);
-		const db = database();
+		const db = requireDb(UNAVAILABLE);
 		if (!(await getMembership(db, user.id, params.id, requestNow(cookies, TEST_CLOCK))))
 			error(404, 'Not found');
 		if (!(await resetInvite(db, user.id, params.id, requestNow(cookies, TEST_CLOCK))))

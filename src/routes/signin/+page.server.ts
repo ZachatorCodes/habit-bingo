@@ -13,7 +13,7 @@ import {
 	signInWithPassword,
 	WRONG_CREDENTIALS_MESSAGE
 } from '#lib/server/auth/sign-in.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 type Field = 'username' | 'password' | 'form';
@@ -61,8 +61,7 @@ export const actions: Actions = {
 		const failWith = (errors: Partial<Record<Field, string>>, status = 400) =>
 			fail(status, { values, errors });
 
-		const db = getDb();
-		if (!db) error(503, 'Sign-in is not available right now.');
+		const db = requireDb('Sign-in is not available right now.');
 		// Per-IP limit first, so a blocked client never reaches Better Auth or the username lockout.
 		const ipAllowed = await checkAndRecordIp(
 			db,

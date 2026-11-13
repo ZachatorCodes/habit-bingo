@@ -15,7 +15,7 @@ import { checkAndRecordIp, TOO_MANY_ATTEMPTS_MESSAGE } from '#lib/server/auth/ip
 import { checkPassword, PASSWORD_MESSAGES } from '#lib/server/auth/password-policy.ts';
 import { signUpWithPassword, USERNAME_RULES_MESSAGE } from '#lib/server/auth/sign-up.ts';
 import { requestNow } from '#lib/server/clock.ts';
-import { getDb } from '#lib/server/db/client.ts';
+import { requireDb } from '#lib/server/request.ts';
 import { DEAD_LINK_MESSAGE, getMembership, groupForInvite, joinGroup } from '#lib/server/groups.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -56,8 +56,7 @@ function setInviteCookie(cookies: Cookies, code: string) {
 }
 
 export const load: PageServerLoad = async ({ params, cookies, locals }) => {
-	const db = getDb();
-	if (!db) error(503, 'Sign-up is not available right now.');
+	const db = requireDb('Sign-up is not available right now.');
 	if (locals.user) {
 		const now = requestNow(cookies, TEST_CLOCK);
 		const found = await groupForInvite(db, params.code, now);
@@ -78,8 +77,7 @@ export const load: PageServerLoad = async ({ params, cookies, locals }) => {
 export const actions: Actions = {
 	join: async ({ params, cookies, locals }) => {
 		if (!locals.user) redirect(303, `/signin?next=${encodeURIComponent(`/join/${params.code}`)}`);
-		const db = getDb();
-		if (!db) error(503, 'Groups are not available right now.');
+		const db = requireDb('Groups are not available right now.');
 		const result = await joinGroup(
 			db,
 			locals.user.id,
@@ -92,8 +90,7 @@ export const actions: Actions = {
 	google: async ({ params, request, cookies, locals }) => {
 		if (locals.user) redirect(303, '/today');
 		if (!googleEnabled()) error(404, 'Google sign-in is not available.');
-		const db = getDb();
-		if (!db) error(503, 'Sign-up is not available right now.');
+		const db = requireDb('Sign-up is not available right now.');
 
 		// The invite may have expired or been used up since the page loaded. Returning re-runs load,
 		// which shows the dead-invite page (Review Focus 3).
@@ -115,8 +112,7 @@ export const actions: Actions = {
 		// Echoed back on errors so nobody retypes them. Never the password.
 		const values = { username: text('username'), name: text('name') };
 
-		const db = getDb();
-		if (!db) error(503, 'Sign-up is not available right now.');
+		const db = requireDb('Sign-up is not available right now.');
 		const ipAllowed = await checkAndRecordIp(
 			db,
 			'signup',

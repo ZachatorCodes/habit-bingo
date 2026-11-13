@@ -2,34 +2,15 @@
 // indistinguishable from one that doesn't exist.
 import { and, count, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import { CATEGORIES, isCategoryId, type CategoryId } from '#lib/game/categories.ts';
-import { normalizeRule, type HabitRule } from '#lib/game/habit-rules.ts';
+import { normalizeRule } from '#lib/game/habit-rules.ts';
 import { isPickableIcon, type IconName } from '#lib/icons.ts';
 import { STARTERS } from '#lib/game/starters.ts';
+import type { Habit, HabitInput } from '#lib/game/types.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { habit } from '#lib/server/db/schema.ts';
 
 export const MAX_ACTIVE_HABITS = 100;
 const CAP_MESSAGE = 'You can have up to 100 habits. Archive some to add more.';
-
-export type Habit = {
-	id: string;
-	icon: IconName;
-	name: string;
-	category: CategoryId;
-	isPrivate: boolean;
-	archivedAt: Date | null;
-} & HabitRule;
-
-export type HabitInput = {
-	icon: string;
-	name: string;
-	category: string;
-	direction: string;
-	period: string;
-	countMode?: string;
-	target: string | number;
-	isPrivate: boolean;
-};
 
 type Problem = { ok: false; field: string; message: string };
 export type HabitResult = { ok: true; habit: Habit } | Problem;

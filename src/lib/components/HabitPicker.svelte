@@ -4,7 +4,7 @@
 	import Icon from './Icon.svelte';
 	import { CATEGORIES } from '#lib/game/categories.ts';
 	import { describeRule } from '#lib/game/habit-rules.ts';
-	import type { Habit } from '#lib/server/habits.ts';
+	import type { Habit } from '#lib/game/types.ts';
 
 	type Props = { habits: Habit[]; selected: string[]; need: number; errorId?: string };
 	let { habits, selected = $bindable(), need, errorId }: Props = $props();

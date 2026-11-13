@@ -16,7 +16,8 @@ import type { Db } from '#lib/server/db/client.ts';
 import { card, cardSquare, feedEvent } from '#lib/server/db/schema.ts';
 import { postCardStarted, syncHighlights } from '#lib/server/feed.ts';
 import { highlightState } from '#lib/server/card-view.ts';
-import { listHabits, type Habit } from '#lib/server/habits.ts';
+import { listHabits } from '#lib/server/habits.ts';
+import type { Habit } from '#lib/game/types.ts';
 
 const EDIT_WINDOW_MS = 48 * 3_600_000;
 

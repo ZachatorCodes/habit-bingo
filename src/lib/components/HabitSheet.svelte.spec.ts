@@ -1,7 +1,8 @@
 import { page } from 'vitest/browser';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
-import HabitSheet, { type SheetData } from './HabitSheet.svelte';
+import type { SheetData } from '#lib/game/types.ts';
+import HabitSheet from './HabitSheet.svelte';
 
 const data: SheetData = {
 	id: 'sq-1',

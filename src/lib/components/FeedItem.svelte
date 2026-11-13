@@ -4,7 +4,7 @@
 	import Icon from '#lib/components/Icon.svelte';
 	import { monthName } from '#lib/game/calendar.ts';
 	import { REACTIONS, type ReactionIcon } from '#lib/game/feed.ts';
-	import type { FeedItem } from '#lib/server/feed.ts';
+	import type { FeedItem } from '#lib/game/types.ts';
 
 	let { item, groupId, now }: { item: FeedItem; groupId: string; now: Date } = $props();
 

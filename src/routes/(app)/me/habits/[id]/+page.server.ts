@@ -2,7 +2,8 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { requireDb } from '#lib/server/request.ts';
 import { libraryUrl, readHabitForm } from '#lib/server/habit-form.ts';
-import { archiveHabit, getHabit, updateHabit, type HabitInput } from '#lib/server/habits.ts';
+import { archiveHabit, getHabit, updateHabit } from '#lib/server/habits.ts';
+import type { HabitInput } from '#lib/game/types.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Your habits are not available right now.';

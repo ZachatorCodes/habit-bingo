@@ -7,7 +7,8 @@ import { eq } from 'drizzle-orm';
 import { startCard, type CardPlan } from './cards.ts';
 import { logCheckIn } from './check-ins.ts';
 import { createGroup, getMembership, joinGroup } from './groups.ts';
-import { createHabit, updateHabit, type Habit } from './habits.ts';
+import { createHabit, updateHabit } from './habits.ts';
+import type { Habit } from '#lib/game/types.ts';
 import { groupBoard, memberCard } from './leaderboard.ts';
 
 let db: Db;

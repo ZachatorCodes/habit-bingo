@@ -16,7 +16,7 @@
 		type Direction,
 		type Period
 	} from '#lib/game/habit-rules.ts';
-	import type { HabitInput } from '#lib/server/habits.ts';
+	import type { HabitInput } from '#lib/game/types.ts';
 
 	type Props = {
 		values: HabitInput;

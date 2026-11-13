@@ -5,7 +5,7 @@
 	import Icon from './Icon.svelte';
 	import ProgressRing from './ProgressRing.svelte';
 	import { describeRule } from '#lib/game/habit-rules.ts';
-	import type { Habit } from '#lib/server/habits.ts';
+	import type { Habit } from '#lib/game/types.ts';
 
 	type Props = {
 		habit: Habit;

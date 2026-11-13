@@ -1,7 +1,7 @@
 import { page } from 'vitest/browser';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
-import type { Habit } from '#lib/server/habits.ts';
+import type { Habit } from '#lib/game/types.ts';
 import HabitPicker from './HabitPicker.svelte';
 
 function habit(id: string, name: string, category: Habit['category'] = 'fitness'): Habit {

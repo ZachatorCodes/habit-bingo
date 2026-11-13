@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Habit } from '#lib/server/habits.ts';
+	import type { Habit } from '#lib/game/types.ts';
 	import TextField from './TextField.svelte';
 
 	type Row = {

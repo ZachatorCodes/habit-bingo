@@ -48,10 +48,7 @@ test('a group gets a member through its link', async ({ page, browser }) => {
 	await join(pageB, link);
 	await expect(pageB.getByRole('heading', { level: 1, name: /Climbers/ })).toBeVisible();
 	await pageB.goto(`${groupPath}?tab=leaderboard`);
-	await expect(pageB.getByRole('link', { name: 'This month' })).toHaveAttribute(
-		'aria-current',
-		'page'
-	);
+	await expect(pageB.getByRole('link', { name: 'All-time' })).toHaveCount(0);
 	await expect(pageB.getByRole('link', { name: `@${b.username} (you)` })).toBeVisible();
 	await expect(
 		pageB.getByRole('region', { name: 'Leaderboard' }).getByText(`@${a.username}`)
@@ -173,19 +170,16 @@ test('strangers get a 404', async ({ page, browser }) => {
 	await pageC.context().close();
 });
 
-test('tabs mark the current board', async ({ page }) => {
-	await newMember(page);
+test('the leaderboard is this month only and shows % complete', async ({ page }) => {
+	await newMemberWithHabits(page, 8);
+	await startCard(page);
 	const { groupPath } = await createClimbers(page);
 	await page.goto(`${groupPath}?tab=leaderboard`);
-	// The tab bar is phone-and-tablet only; both panes show side by side at lg.
-	const tab = page.getByRole('link', { name: 'Leaderboard' });
-	const month = page.getByRole('link', { name: 'This month' });
-	const all = page.getByRole('link', { name: 'All-time' });
-	if (await tab.isVisible()) await expect(tab).toHaveAttribute('aria-current', 'page');
-	await expect(month).toHaveAttribute('aria-current', 'page');
-	await all.click();
-	await expect(all).toHaveAttribute('aria-current', 'page');
-	await expect(month).not.toHaveAttribute('aria-current', 'page');
+	await expect(page.getByRole('link', { name: 'This month' })).toHaveCount(0);
+	await expect(page.getByRole('link', { name: 'All-time' })).toHaveCount(0);
+	const board = page.getByRole('region', { name: 'Leaderboard' });
+	await expect(board.getByText(/^\d+% · \d+ lines?$/)).toBeVisible();
+	await expect(board.getByText(/\bpts\b|\bpoints?\b/)).toHaveCount(0);
 });
 
 test('an admin deletes a group link; the owner resets it', async ({ page, browser }) => {

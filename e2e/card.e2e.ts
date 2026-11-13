@@ -50,13 +50,16 @@ test('card sizes carry no points multiplier', async ({ page }) => {
 	await expect(page.getByText(/× points/)).toHaveCount(0);
 });
 
-test('a new card starts with 0 pts and no bingo', async ({ page }) => {
+test('a new card starts at 0% complete, with no bingo and no points anywhere', async ({ page }) => {
 	await newMemberWithHabits(page, 8);
 	await setClock(page, '2026-11-10T12:00:00Z');
 	await buildToBoard(page);
 	await page.getByRole('button', { name: 'Start card' }).click();
 	await expect(page).toHaveURL(/\/card\?started=1$/);
-	await expect(page.getByText(/^0\s*pts$/)).toBeVisible();
+	await expect(page.getByText('0% complete')).toBeVisible();
+	await expect(page.getByText(/\bpts\b|\bpoints?\b/)).toHaveCount(0);
+	await page.goto('/today');
+	await expect(page.getByText(/\bpts\b|\bpoints?\b/)).toHaveCount(0);
 	await expect(page.getByText('Bingo!')).toHaveCount(0);
 	await expect(page.getByRole('list', { name: 'Rewards' }).getByText('Reached')).toHaveCount(0);
 });

@@ -27,7 +27,7 @@
 
 <Hero
 	title={`${data.monthName} recap`}
-	summary={`${plural(data.result.points, 'point')} · ${plural(data.result.lines, 'line')} · ${data.result.squaresCounting} of ${data.squares} squares counting`}
+	summary={`${plural(data.result.lines, 'line')} · ${data.result.squaresCounting} of ${data.squares} squares counting`}
 />
 
 <div class="lg:mx-auto lg:-mt-[18px] lg:grid lg:max-w-5xl lg:grid-cols-2 lg:items-start lg:gap-4">

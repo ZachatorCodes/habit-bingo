@@ -325,11 +325,10 @@ test('the card header reflects check-ins', async ({ page }) => {
 	await onToday(page);
 	const pointsOf = async () => {
 		await page.goto('/card');
-		const text = await page.getByText(/^\d+ points?$/).innerText();
-		return Number(text.split(' ')[0]);
+		const text = await page.getByText(/^\d+% complete$/).innerText();
+		return Number(text.split('%')[0]);
 	};
 	const before = await pointsOf();
-	await expect(page.getByText(/\d+% complete/)).toBeVisible();
 	await page.goto('/today');
 	await waitForHydration(page);
 	await page.getByRole('button', { name: 'Log Finish a book' }).click();

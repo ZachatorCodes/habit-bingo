@@ -273,7 +273,7 @@ test('tapping Card again keeps the latest board', async ({ page }) => {
 	await onCard(page);
 	const points = () =>
 		page
-			.getByText(/^\d+\s*pts$/)
+			.getByText(/^\d+% complete$/)
 			.first()
 			.innerText();
 	const before = await points();

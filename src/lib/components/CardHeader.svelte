@@ -58,12 +58,7 @@
 	<div
 		class="mx-auto flex max-w-2xl flex-col gap-5 px-4 py-6 lg:grid lg:max-w-5xl lg:grid-cols-[minmax(0,640px)_1fr] lg:grid-rows-[auto_1fr] lg:gap-x-8"
 	>
-		<div class="flex items-end justify-between gap-4 lg:col-start-2 lg:row-start-1">
-			<p class="text-[26px] leading-none font-extrabold text-forest tabular-nums">
-				<span aria-hidden="true"
-					>{score.points}<span class="ml-1 text-xs font-semibold text-muted">pts</span></span
-				><span class="sr-only">{score.points} {score.points === 1 ? 'point' : 'points'}</span>
-			</p>
+		<div class="flex items-end justify-end gap-4 lg:col-start-2 lg:row-start-1">
 			<div class="text-right text-[13px] font-semibold">
 				<p>{lineText}</p>
 				{#if next}<p class="text-muted">Next reward: {nextReward}</p>{/if}

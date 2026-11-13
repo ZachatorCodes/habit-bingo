@@ -31,14 +31,14 @@
 				class="flex flex-col gap-2 md:grid md:grid-cols-2 xl:grid-cols-3"
 				data-sveltekit-preload-data="off"
 			>
-				{#each data.months as { month, name, points, tiers } (month)}
+				{#each data.months as { month, name, lines, tiers } (month)}
 					<li>
 						<a
 							href={resolve('/(app)/me/history/[month]', { month })}
 							class="flex min-h-14 items-center gap-3 rounded-row bg-page p-3 font-bold tabular-nums focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
 						>
 							<span class="min-w-0 flex-1 break-words">
-								{[name, `${points} point${points === 1 ? '' : 's'}`, tiers.join(', ')]
+								{[name, `${lines} line${lines === 1 ? '' : 's'}`, tiers.join(', ')]
 									.filter(Boolean)
 									.join(' · ')}
 							</span>

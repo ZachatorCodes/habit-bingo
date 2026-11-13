@@ -7,7 +7,6 @@
 	import Icon from '#lib/components/Icon.svelte';
 	import Notice from '#lib/components/Notice.svelte';
 	import Seo from '#lib/components/Seo.svelte';
-	import { monthName } from '#lib/game/calendar.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -15,8 +14,6 @@
 	const page = $derived(resolve('/(app)/groups/[id]', { id: data.group.id }));
 	const linkClass =
 		'inline-flex min-h-11 items-center px-4 font-extrabold focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink';
-	const pillClass = (on: boolean) =>
-		`${linkClass} rounded-full ${on ? 'bg-forest text-white' : 'border border-line bg-surface text-ink'}`;
 	const tabClass = (on: boolean) =>
 		`${linkClass} border-b-2 ${on ? 'border-forest text-forest' : 'border-transparent text-muted'}`;
 	const leaveText = $derived(
@@ -108,18 +105,6 @@
 					aria-label="Leaderboard"
 					class="flex-col gap-5 {data.tab === 'leaderboard' ? 'flex' : 'hidden lg:flex'}"
 				>
-					<nav aria-label="Board" class="flex flex-wrap gap-2">
-						<a
-							href={`${page}?tab=leaderboard`}
-							aria-current={data.board === 'month' ? 'page' : undefined}
-							class={pillClass(data.board === 'month')}>This month</a
-						>
-						<a
-							href={`${page}?tab=leaderboard&board=all`}
-							aria-current={data.board === 'all' ? 'page' : undefined}
-							class={pillClass(data.board === 'all')}>All-time</a
-						>
-					</nav>
 					<ol class="flex flex-col gap-2">
 						{#each data.leaderboard.rows as row (row.userId)}
 							<li>
@@ -138,22 +123,17 @@
 									{/if}
 									<span class="w-6 text-center font-extrabold tabular-nums">{row.rank ?? ''}</span>
 									{@render avatar(row.avatarIcon, row.displayUsername, row.isViewer)}
-									{#if row.points === null}
+									{#if row.percent === null}
 										<span class="text-sm text-muted">No card yet</span>
 									{:else}
 										<span class="text-sm font-bold tabular-nums"
-											>{row.points} pts · {row.lines} {row.lines === 1 ? 'line' : 'lines'}</span
+											>{row.percent}% · {row.lines} {row.lines === 1 ? 'line' : 'lines'}</span
 										>
 									{/if}
 								</a>
 							</li>
 						{/each}
 					</ol>
-					{#if data.leaderboard.provisionalMonth}
-						<p class="text-sm text-muted">
-							Includes {monthName(data.leaderboard.provisionalMonth)}, which is final on the 4th.
-						</p>
-					{/if}
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</section>
 				<section

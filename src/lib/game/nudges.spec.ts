@@ -139,11 +139,39 @@ describe('nudges', () => {
 		);
 	});
 
-	it('no "1 square from a bingo" from "at most" squares that do not count yet', () => {
+	it('on-track squares that count at month end make a "keep it up" bingo nudge', () => {
 		const limit = rule('month', 'days', 3, 'atMost');
 		const pending = (id: string) => square(id, 'held', limit, days({}), false);
 		const near = board([pending('a'), pending('b'), ...empty(6)]);
-		expect(run(near, '2026-10-20').map((n) => n.text)).not.toContain('1 square from a bingo');
+		expect(run(near, '2026-10-20')).toContainEqual({
+			text: 'Keep it up: 1 square from a bingo by month end',
+			to: { kind: 'card' }
+		});
+		// A lost or unstarted square is not on track.
+		const off = board(
+			[pending('a'), square('b', 'lost', limit, days({}), false), ...empty(6)],
+			center('buildNext')
+		);
+		expect(run(off, '2026-10-20').map((n) => n.text)).not.toContain(
+			'Keep it up: 1 square from a bingo by month end'
+		);
+	});
+
+	it('the reward nudge counts on-track squares in the last week', () => {
+		const gym = rule('week', 'days', 1);
+		const onTrack = (id: string) => square(id, 'held', gym, days({}), false);
+		// The center, one goal and two held weekly habits: 4 of the 5 needed.
+		const four = board([square('a', 'complete'), onTrack('b'), onTrack('c'), ...empty(5)]);
+		expect(run(four, '2026-10-25')).toContainEqual({
+			text: '1 square from Movie night',
+			to: { kind: 'card' }
+		});
+		// On track for 5, though only 2 count yet.
+		const five = board([square('a', 'complete'), ...['b', 'c', 'd'].map(onTrack), ...empty(4)]);
+		expect(run(five, '2026-10-25')).toContainEqual({
+			text: 'On track for Movie night',
+			to: { kind: 'card' }
+		});
 	});
 
 	it('shows at most 3, most urgent first', () => {

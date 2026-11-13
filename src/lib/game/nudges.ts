@@ -74,20 +74,31 @@ export function nudges(input: {
 	}
 
 	const counting = squares.map((square) => square.counting);
-	const total = counting.filter(Boolean).length;
+	// On track: counts now, or a held / at-risk habit that counts at month end if it keeps up.
+	const onTrack = squares.map(
+		(square) =>
+			square.counting ||
+			(square.rule !== null && (square.state === 'held' || square.state === 'atRisk'))
+	);
 	const reached = reachedTiers(counting, size);
 
-	// 3. One square from a first bingo.
-	const nearLine = lineIndexes(size).some(
-		(line) => line.filter((index) => counting[index]).length === size - 1
-	);
-	if (completeLines(counting, size).length === 0 && nearLine) {
-		found.push({ text: '1 square from a bingo', to: { kind: 'card' } });
+	// 3. One square from a first bingo; "keep it up" when the line also needs month-end squares.
+	if (completeLines(counting, size).length === 0) {
+		const near = lineIndexes(size).filter(
+			(line) => line.filter((index) => onTrack[index]).length === size - 1
+		);
+		if (near.length > 0) {
+			const now = near.some((line) => line.every((index) => counting[index] || !onTrack[index]));
+			found.push({
+				text: now ? '1 square from a bingo' : 'Keep it up: 1 square from a bingo by month end',
+				to: { kind: 'card' }
+			});
+		}
 	}
 
-	// 4. Within 2 squares of a reward tier, in the last 7 days only: earlier, the held squares that
-	// make it "close" are untested.
+	// 4. Within 2 on-track squares of a reward not yet reached, in the last 7 days only.
 	const lastWeek = canBuildNextMonth(today);
+	const total = onTrack.filter(Boolean).length;
 	const tiers = [
 		{ tier: 'sixtyPercent', need: CARD_SIZES[size].sixtyThreshold, reward: rewards.sixty },
 		{ tier: 'blackout', need: size * size, reward: rewards.blackout }
@@ -96,7 +107,10 @@ export function nudges(input: {
 		const left = need - total;
 		if (!lastWeek || reached.includes(tier) || left > 2) continue;
 		found.push({
-			text: `${left} square${left === 1 ? '' : 's'} from ${reward}`,
+			text:
+				left <= 0
+					? `On track for ${reward}`
+					: `${left} square${left === 1 ? '' : 's'} from ${reward}`,
 			to: { kind: 'card' }
 		});
 	}

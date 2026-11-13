@@ -165,8 +165,8 @@ test('heads up points at what needs doing today', async ({ page }) => {
 	await page.goto('/today');
 	await waitForHydration(page);
 	const headsUp = page.getByRole('region', { name: 'Heads up' }).getByRole('link');
-	await expect(headsUp).toHaveCount(2);
-	// The board is shuffled, so the two can come in either order.
+	// The board is shuffled, so the two can come in either order, and a "keep it up" bingo nudge
+	// may join them when on-track squares line up with the center.
 	for (const name of ['Scoop the litter box', 'Drink water']) {
 		await expect(
 			headsUp.filter({ hasText: `You didn't log ${name} yesterday: still time` })

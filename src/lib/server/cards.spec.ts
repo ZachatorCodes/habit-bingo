@@ -12,9 +12,9 @@ import {
 	editBlocked,
 	updateCard,
 	validateRewards,
-	type CardPlan,
-	type Rewards
+	type CardPlan
 } from './cards';
+import type { Rewards } from '#lib/game/types.ts';
 import { archiveHabit, createHabit, updateHabit, type Habit } from './habits';
 
 let db: Db;

@@ -3,7 +3,7 @@
 	import { CARD_SIZES, type CardSize } from '#lib/game/card-layout.ts';
 	import { nextTier, squaresToLine, type CardScore, type Tier } from '#lib/game/score.ts';
 	import type { SquareState } from '#lib/game/square-state.ts';
-	import type { Rewards } from '#lib/server/cards.ts';
+	import type { Rewards } from '#lib/game/types.ts';
 	import Hero from './Hero.svelte';
 	import Icon from './Icon.svelte';
 

@@ -5,6 +5,7 @@ import { group, groupMember, invite, user } from '#lib/server/db/schema.ts';
 import { createTestDb } from '#lib/server/db/test-db.ts';
 import { eq } from 'drizzle-orm';
 import {
+	nextOwner,
 	DEAD_LINK_MESSAGE,
 	FULL_MESSAGE,
 	MAX_MEMBERS,
@@ -302,5 +303,14 @@ describe('updateGroup', () => {
 			field: 'icon',
 			message: 'Pick an icon.'
 		});
+	});
+});
+
+describe('nextOwner', () => {
+	it('is the first other member by join order', () => {
+		const members = [{ userId: 'a' }, { userId: 'b' }, { userId: 'c' }];
+		expect(nextOwner(members, 'a')).toEqual({ userId: 'b' });
+		expect(nextOwner(members, 'b')).toEqual({ userId: 'a' });
+		expect(nextOwner([{ userId: 'a' }], 'a')).toBeUndefined();
 	});
 });

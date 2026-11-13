@@ -108,3 +108,38 @@ export async function consumeInvite(db: Db, code: string, now: Date): Promise<bo
 		.returning({ code: invite.code });
 	return rows.length === 1;
 }
+
+/** The admin invite form's limits, shown on the page too. */
+export const INVITE_LIMITS = {
+	expiresInDays: { min: 1, max: 30, default: 7 },
+	maxUses: { min: 1, max: 50, default: 1 }
+} as const;
+
+const LIMIT_MESSAGES = {
+	expiresInDays: 'Choose between 1 and 30 days.',
+	maxUses: 'Choose between 1 and 50 uses.'
+} as const;
+
+/** A whole number within the field's limits, or null. */
+function whole(value: string, field: keyof typeof INVITE_LIMITS): number | null {
+	if (!/^\d{1,3}$/.test(value)) return null;
+	const n = Number(value);
+	const { min, max } = INVITE_LIMITS[field];
+	return n >= min && n <= max ? n : null;
+}
+
+/** Checks the admin invite form; every field out of range is reported at once. */
+export function validateInviteInput(values: {
+	expiresInDays: string;
+	maxUses: string;
+}):
+	| { ok: true; value: { expiresInDays: number; maxUses: number } }
+	| { ok: false; errors: Record<string, string> } {
+	const expiresInDays = whole(values.expiresInDays, 'expiresInDays');
+	const maxUses = whole(values.maxUses, 'maxUses');
+	const errors: Record<string, string> = {};
+	if (expiresInDays === null) errors.expiresInDays = LIMIT_MESSAGES.expiresInDays;
+	if (maxUses === null) errors.maxUses = LIMIT_MESSAGES.maxUses;
+	if (expiresInDays === null || maxUses === null) return { ok: false, errors };
+	return { ok: true, value: { expiresInDays, maxUses } };
+}

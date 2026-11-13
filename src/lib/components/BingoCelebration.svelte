@@ -4,7 +4,7 @@
 	import ProgressRing from './ProgressRing.svelte';
 	import { fullScreenConfetti } from '#lib/celebrate.ts';
 	import type { Tier } from '#lib/game/score.ts';
-	import type { Rewards } from '#lib/server/cards.ts';
+	import type { Rewards } from '#lib/game/types.ts';
 
 	type Props = {
 		/** Lines just completed (their squares ripple gold on the board). */

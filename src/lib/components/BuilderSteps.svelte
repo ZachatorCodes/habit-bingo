@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Step } from '#lib/server/card-drafts.ts';
+	import type { Step } from '#lib/game/card-draft.ts';
 
 	type Props = {
 		steps: Step[];

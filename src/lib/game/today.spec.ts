@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CardSpan } from './evaluate.ts';
 import type { HabitRule } from './habit-rules.ts';
-import { progressText, todaySection } from './today.ts';
+import { nudgeSquares, progressText, todayRows, todaySection } from './today.ts';
 
 const span: CardSpan = { startDate: '2026-10-01', weekStartsOn: 'monday' };
 const counts = (entries: Record<string, number>) => new Map(Object.entries(entries));
@@ -108,5 +108,70 @@ describe('progressText', () => {
 				TODAY
 			)
 		).toBe('1 of 3 this month');
+	});
+});
+
+describe('todayRows', () => {
+	const walk = {
+		id: 'sq-walk',
+		isCenter: false as const,
+		icon: 'person-simple-walk' as const,
+		name: 'Walk',
+		...rule('atLeast', 'day', 'times', 2)
+	};
+	const read = {
+		id: 'sq-read',
+		isCenter: false as const,
+		icon: 'book-open' as const,
+		name: 'Read',
+		...rule('atLeast', 'month', 'days', 4)
+	};
+	const card = { ...span, squares: [walk, { id: 'sq-free', isCenter: true as const }, read] };
+
+	it('puts each habit square in its section with how it looks now, after a log and after an undo', () => {
+		const checkIns = new Map([['sq-walk', counts({ [TODAY]: 1 })]]);
+		const sections = todayRows(card, checkIns, TODAY, TODAY, 20);
+		expect(sections.thisWeek).toEqual([]);
+		expect(sections.doToday).toHaveLength(1);
+		const row = sections.doToday[0];
+		expect(row).toMatchObject({
+			squareId: 'sq-walk',
+			icon: 'person-simple-walk',
+			name: 'Walk',
+			count: 1
+		});
+		expect(row.text).toBe(progressText(walk, span, counts({ [TODAY]: 1 }), TODAY, TODAY));
+		expect(row.ifLogged.count).toBe(2);
+		expect(row.ifUndone?.count).toBe(0);
+		expect(sections.anytime.map((r) => r.squareId)).toEqual(['sq-read']);
+		expect(sections.anytime[0].ifUndone).toBeNull();
+	});
+
+	it('caps the logged count', () => {
+		const checkIns = new Map([['sq-walk', counts({ [TODAY]: 20 })]]);
+		expect(todayRows(card, checkIns, TODAY, TODAY, 20).done[0].ifLogged.count).toBe(20);
+	});
+});
+
+describe('nudgeSquares', () => {
+	it('pairs each card square with its board view and counts', () => {
+		const walk = { id: 'sq-walk', isCenter: false as const, ...rule('atLeast', 'day', 'times', 2) };
+		const free = { id: 'sq-free', isCenter: true as const };
+		const walkCounts = counts({ [TODAY]: 1 });
+		const board = [
+			{ name: 'Walk', state: 'inProgress' as const, counting: false },
+			{ name: 'Free', state: 'free' as const, counting: true }
+		];
+		expect(nudgeSquares([walk, free], board, new Map([['sq-walk', walkCounts]]))).toEqual([
+			{
+				id: 'sq-walk',
+				name: 'Walk',
+				state: 'inProgress',
+				counting: false,
+				rule: walk,
+				counts: walkCounts
+			},
+			{ id: null, name: 'Free', state: 'free', counting: true, rule: null, counts: new Map() }
+		]);
 	});
 });

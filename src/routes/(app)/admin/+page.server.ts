@@ -1,21 +1,17 @@
 import { error, fail } from '@sveltejs/kit';
 import { requireUser } from '#lib/server/auth/guards.ts';
-import { createInvite, deleteInvite, listInvites } from '#lib/server/auth/invites.ts';
+import {
+	INVITE_LIMITS,
+	createInvite,
+	deleteInvite,
+	listInvites,
+	validateInviteInput
+} from '#lib/server/auth/invites.ts';
 import { createResetLink } from '#lib/server/auth/password-reset.ts';
 import { personOf, readForm, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Admin is not available right now.';
-
-const INVITE_LIMITS = {
-	expiresInDays: { min: 1, max: 30, default: 7 },
-	maxUses: { min: 1, max: 50, default: 1 }
-} as const;
-
-const LIMIT_MESSAGES = {
-	expiresInDays: 'Choose between 1 and 30 days.',
-	maxUses: 'Choose between 1 and 50 uses.'
-} as const;
 
 /**
  * The signed-in admin. Everyone else gets the same 404 as a page that does not exist, for the page
@@ -31,14 +27,6 @@ function requireAdmin(locals: App.Locals) {
 async function readTrimmed(request: Request) {
 	const text = await readForm(request);
 	return (key: string) => text(key).trim();
-}
-
-/** A whole number within the field's limits, or null. */
-function whole(value: string, field: keyof typeof INVITE_LIMITS): number | null {
-	if (!/^\d{1,3}$/.test(value)) return null;
-	const n = Number(value);
-	const { min, max } = INVITE_LIMITS[field];
-	return n >= min && n <= max ? n : null;
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -70,19 +58,10 @@ export const actions: Actions = {
 		const db = requireDb(UNAVAILABLE);
 		const text = await readTrimmed(request);
 		const values = { expiresInDays: text('expiresInDays'), maxUses: text('maxUses') };
-		const expiresInDays = whole(values.expiresInDays, 'expiresInDays');
-		const maxUses = whole(values.maxUses, 'maxUses');
-		const errors: Record<string, string> = {};
-		if (expiresInDays === null) errors.expiresInDays = LIMIT_MESSAGES.expiresInDays;
-		if (maxUses === null) errors.maxUses = LIMIT_MESSAGES.maxUses;
-		if (expiresInDays === null || maxUses === null)
-			return fail(400, { section: 'invite' as const, values, errors });
+		const valid = validateInviteInput(values);
+		if (!valid.ok) return fail(400, { section: 'invite' as const, values, errors: valid.errors });
 
-		const { code } = await createInvite(
-			db,
-			{ createdBy: user.id, expiresInDays, maxUses },
-			new Date()
-		);
+		const { code } = await createInvite(db, { createdBy: user.id, ...valid.value }, new Date());
 		return { section: 'invite' as const, inviteLink: `${url.origin}/join/${code}` };
 	},
 

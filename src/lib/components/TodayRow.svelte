@@ -1,25 +1,5 @@
-<script lang="ts" module>
-	import type { SquareState } from '#lib/game/square-state.ts';
-
-	/** How a row looks: its square's state, progress text, and that day's count. */
-	export type TodayRowView = {
-		state: SquareState;
-		progress: number;
-		text: string;
-		count: number;
-	};
-
-	/** One habit on Today, with how it will look after one more check-in or one fewer. */
-	export type TodayRowData = TodayRowView & {
-		squareId: string;
-		icon: string;
-		name: string;
-		ifLogged: TodayRowView;
-		ifUndone: TodayRowView | null;
-	};
-</script>
-
 <script lang="ts">
+	import type { TodayRowData, TodayRowView } from '#lib/game/types.ts';
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';

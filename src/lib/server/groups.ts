@@ -211,7 +211,7 @@ export async function leaveGroup(
 			.delete(groupMember)
 			.where(and(eq(groupMember.groupId, groupId), eq(groupMember.userId, userId)));
 		if (me.role === 'owner') {
-			const heir = members.find((m) => m.userId !== userId)!;
+			const heir = nextOwner(members, userId)!;
 			await tx
 				.update(groupMember)
 				.set({ role: 'owner' })
@@ -274,4 +274,12 @@ export async function resetInvite(
 			.where(and(eq(invite.groupId, groupId), gt(invite.expiresAt, now)));
 		return (await standingInvite(tx, ownerId, groupId, now)).code;
 	});
+}
+
+/** Who inherits a group when `userId` leaves it: the first other member, by join order. */
+export function nextOwner<M extends { userId: string }>(
+	members: readonly M[],
+	userId: string
+): M | undefined {
+	return members.find((m) => m.userId !== userId);
 }

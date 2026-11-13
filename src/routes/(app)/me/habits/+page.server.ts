@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { CATEGORIES, isCategoryId, type CategoryId } from '#lib/game/categories.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
-import { requireDb } from '#lib/server/request.ts';
+import { formText, requireDb } from '#lib/server/request.ts';
 import {
 	addStarter,
 	addedStarterIds,
@@ -16,8 +16,7 @@ const UNAVAILABLE = 'Your habits are not available right now.';
 const FULL_MESSAGE = 'You can have up to 100 habits. Archive some to add more.';
 
 async function habitId(request: Request): Promise<string> {
-	const id = (await request.formData()).get('id');
-	return typeof id === 'string' ? id : '';
+	return formText(await request.formData(), 'id');
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -54,11 +53,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 export const actions: Actions = {
 	addStarter: async ({ locals, request }) => {
 		const user = requireUser(locals);
-		const starterId = (await request.formData()).get('starterId');
 		const result = await addStarter(
 			requireDb(UNAVAILABLE),
 			user.id,
-			typeof starterId === 'string' ? starterId : ''
+			formText(await request.formData(), 'starterId')
 		);
 		if (!result.ok) return fail(400, { message: result.message });
 		return { addedStarter: result.added };

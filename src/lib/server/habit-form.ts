@@ -1,12 +1,10 @@
 import type { HabitInput } from './habits.ts';
+import { formText } from './request.ts';
 
 /** Reads the habit form's fields; validation happens in the habits service. */
 export async function readHabitForm(request: Request): Promise<HabitInput> {
 	const data = await request.formData();
-	const text = (key: string) => {
-		const value = data.get(key);
-		return typeof value === 'string' ? value : '';
-	};
+	const text = (key: string) => formText(data, key);
 	return {
 		icon: text('icon'),
 		name: text('name'),

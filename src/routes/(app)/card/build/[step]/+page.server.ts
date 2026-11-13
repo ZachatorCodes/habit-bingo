@@ -36,7 +36,7 @@ import {
 	type Card
 } from '#lib/server/cards.ts';
 import type { Db } from '#lib/server/db/client.ts';
-import { personOf, requestClock, requireDb } from '#lib/server/request.ts';
+import { formText, personOf, readForm, requestClock, requireDb } from '#lib/server/request.ts';
 import { DEFAULT_HABIT_INPUT, readHabitForm } from '#lib/server/habit-form.ts';
 import { createHabit, listHabits, type Habit } from '#lib/server/habits.ts';
 import type { SquareState } from '#lib/game/square-state.ts';
@@ -310,8 +310,7 @@ export const actions: Actions = {
 		const targets: Record<string, number> = {};
 		for (const habit of picked) {
 			const field = `target:${habit.id}`;
-			const raw = form.get(field);
-			const text = typeof raw === 'string' ? raw.trim() : '';
+			const text = formText(form, field).trim();
 			values[field] = text;
 			const { min, max } = targetRange(habit.direction, habit.period, habit.countMode);
 			const number = Number(text);
@@ -337,11 +336,7 @@ export const actions: Actions = {
 		if (size === null) redirect(303, to('size'));
 		await pickedHabits(db, user.id, draft, size, keptSquares(card), to('habits'));
 
-		const form = await request.formData();
-		const text = (name: string) => {
-			const raw = form.get(name);
-			return typeof raw === 'string' ? raw : '';
-		};
+		const text = await readForm(request);
 		const typed = { bingo: text('bingo'), sixty: text('sixty'), blackout: text('blackout') };
 		const result = validateRewards(typed);
 		if (!result.ok) {

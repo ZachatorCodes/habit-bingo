@@ -3,7 +3,7 @@ import { AVATAR_ICONS } from '#lib/icons.ts';
 import { isValidTimezone, type WeekStart } from '#lib/profile.ts';
 import { completeOnboarding } from '#lib/server/auth/accounts.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
-import { requireDb } from '#lib/server/request.ts';
+import { readForm, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 type Field = 'username' | 'name' | 'avatarIcon' | 'timezone' | 'weekStartsOn' | 'form';
@@ -29,11 +29,7 @@ export const actions: Actions = {
 		if (user.onboardedAt) redirect(303, '/today');
 		const db = requireDb('Onboarding is not available right now.');
 
-		const formData = await request.formData();
-		const text = (key: string) => {
-			const value = formData.get(key);
-			return typeof value === 'string' ? value : '';
-		};
+		const text = await readForm(request);
 		const values = {
 			username: text('username'),
 			name: text('name'),

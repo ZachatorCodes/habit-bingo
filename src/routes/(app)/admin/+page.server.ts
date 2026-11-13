@@ -2,7 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { createInvite, deleteInvite, listInvites } from '#lib/server/auth/invites.ts';
 import { createResetLink } from '#lib/server/auth/password-reset.ts';
-import { personOf, requireDb } from '#lib/server/request.ts';
+import { personOf, readForm, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Admin is not available right now.';
@@ -27,12 +27,10 @@ function requireAdmin(locals: App.Locals) {
 	return user;
 }
 
-async function readForm(request: Request) {
-	const formData = await request.formData();
-	return (key: string) => {
-		const value = formData.get(key);
-		return typeof value === 'string' ? value.trim() : '';
-	};
+/** Admin trims every field. */
+async function readTrimmed(request: Request) {
+	const text = await readForm(request);
+	return (key: string) => text(key).trim();
 }
 
 /** A whole number within the field's limits, or null. */
@@ -70,7 +68,7 @@ export const actions: Actions = {
 	createInvite: async ({ request, locals, url }) => {
 		const user = requireAdmin(locals);
 		const db = requireDb(UNAVAILABLE);
-		const text = await readForm(request);
+		const text = await readTrimmed(request);
 		const values = { expiresInDays: text('expiresInDays'), maxUses: text('maxUses') };
 		const expiresInDays = whole(values.expiresInDays, 'expiresInDays');
 		const maxUses = whole(values.maxUses, 'maxUses');
@@ -91,7 +89,7 @@ export const actions: Actions = {
 	deleteInvite: async ({ request, locals }) => {
 		requireAdmin(locals);
 		const db = requireDb(UNAVAILABLE);
-		const code = (await readForm(request))('code');
+		const code = (await readTrimmed(request))('code');
 		if (!(await deleteInvite(db, code, new Date())))
 			return fail(404, { deleteError: 'That invite was already gone.' });
 		return { deleted: true };
@@ -100,7 +98,7 @@ export const actions: Actions = {
 	resetLink: async ({ request, locals, url }) => {
 		const user = requireAdmin(locals);
 		const db = requireDb(UNAVAILABLE);
-		const text = await readForm(request);
+		const text = await readTrimmed(request);
 		const values = { username: text('username') };
 		if (!values.username)
 			return fail(400, {

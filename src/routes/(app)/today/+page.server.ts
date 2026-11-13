@@ -11,7 +11,7 @@ import { getCard, type Card } from '#lib/server/cards.ts';
 import { cardView } from '#lib/server/card-view.ts';
 import { getCheckIns, logCheckIn, MAX_COUNT } from '#lib/server/check-ins.ts';
 import { localDate, localHour } from '#lib/server/clock.ts';
-import { personOf, requestClock, requireDb } from '#lib/server/request.ts';
+import { personOf, readForm, requestClock, requireDb } from '#lib/server/request.ts';
 import { finalizeMonths, markSeen, newestUnseen } from '#lib/server/month-results.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -126,11 +126,7 @@ async function log(
 	delta: 1 | -1
 ) {
 	const user = requireUser(locals);
-	const data = await request.formData();
-	const field = (name: string) => {
-		const value = data.get(name);
-		return typeof value === 'string' ? value : '';
-	};
+	const field = await readForm(request);
 	const result = await logCheckIn(
 		requireDb(UNAVAILABLE),
 		{ id: user.id, timezone: personOf(user).timezone },

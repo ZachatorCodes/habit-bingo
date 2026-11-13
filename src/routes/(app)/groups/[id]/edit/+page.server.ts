@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireUser } from '#lib/server/auth/guards.ts';
 
-import { requestClock, requireDb } from '#lib/server/request.ts';
+import { readForm, requestClock, requireDb } from '#lib/server/request.ts';
 import { getMembership, updateGroup } from '#lib/server/groups.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -23,11 +23,7 @@ export const load: PageServerLoad = async ({ locals, cookies, params }) => {
 export const actions: Actions = {
 	default: async ({ locals, request, params }) => {
 		const user = requireUser(locals);
-		const formData = await request.formData();
-		const text = (key: string) => {
-			const value = formData.get(key);
-			return typeof value === 'string' ? value : '';
-		};
+		const text = await readForm(request);
 		const values = { name: text('name'), icon: text('icon') };
 		const result = await updateGroup(requireDb(UNAVAILABLE), user.id, params.id, values);
 		if (!result) error(404, 'Not found');

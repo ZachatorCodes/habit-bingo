@@ -14,7 +14,7 @@ import { checkAndRecordIp, TOO_MANY_ATTEMPTS_MESSAGE } from '#lib/server/auth/ip
 import { checkPassword, PASSWORD_MESSAGES } from '#lib/server/auth/password-policy.ts';
 import { signUpWithPassword, USERNAME_RULES_MESSAGE } from '#lib/server/auth/sign-up.ts';
 
-import { requestClock, requireDb } from '#lib/server/request.ts';
+import { formText, requestClock, requireDb } from '#lib/server/request.ts';
 import { DEAD_LINK_MESSAGE, getMembership, groupForInvite, joinGroup } from '#lib/server/groups.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -99,10 +99,7 @@ export const actions: Actions = {
 	signup: async ({ request, cookies, locals, getClientAddress }) => {
 		if (locals.user) redirect(303, '/today');
 		const formData = await request.formData();
-		const text = (key: string) => {
-			const value = formData.get(key);
-			return typeof value === 'string' ? value : '';
-		};
+		const text = (key: string) => formText(formData, key);
 		// Echoed back on errors so nobody retypes them. Never the password.
 		const values = { username: text('username'), name: text('name') };
 

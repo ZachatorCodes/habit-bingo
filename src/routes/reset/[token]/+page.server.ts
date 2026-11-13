@@ -4,7 +4,7 @@ import { getAuth } from '#lib/server/auth/index.ts';
 import { checkAndRecordIp, TOO_MANY_ATTEMPTS_MESSAGE } from '#lib/server/auth/ip-limit.ts';
 import { getResetStatus, getResetUsername, useResetLink } from '#lib/server/auth/password-reset.ts';
 import { isPwnedPassword } from '#lib/server/auth/pwned.ts';
-import { requireDb } from '#lib/server/request.ts';
+import { formText, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Password resets are not available right now.';
@@ -32,8 +32,7 @@ export const actions: Actions = {
 			IP_LIMIT_MULTIPLIER
 		);
 		if (!ipAllowed) return fail(429, { errors: { form: TOO_MANY_ATTEMPTS_MESSAGE } });
-		const value = (await request.formData()).get('newPassword');
-		const newPassword = typeof value === 'string' ? value : '';
+		const newPassword = formText(await request.formData(), 'newPassword');
 		if (!newPassword) return fail(400, { errors: { newPassword: 'Enter a new password.' } });
 
 		const result = await useResetLink(

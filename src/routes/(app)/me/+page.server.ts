@@ -19,7 +19,7 @@ import {
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { retireResetLinks } from '#lib/server/auth/password-reset.ts';
 import { getAuth } from '#lib/server/auth/index.ts';
-import { personOf, requireDb } from '#lib/server/request.ts';
+import { personOf, readForm, requireDb } from '#lib/server/request.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const UNAVAILABLE = 'Your account is not available right now.';
@@ -27,14 +27,6 @@ const UNAVAILABLE = 'Your account is not available right now.';
 const DELETE_MISMATCH_MESSAGE = "That doesn't match your username.";
 
 const googleEnabled = () => Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
-
-async function readForm(request: Request) {
-	const formData = await request.formData();
-	return (key: string) => {
-		const value = formData.get(key);
-		return typeof value === 'string' ? value : '';
-	};
-}
 
 /** Every zone this server knows, with UTC first, plus the user's own if it has gone missing. */
 function timezoneOptions(current: string): string[] {

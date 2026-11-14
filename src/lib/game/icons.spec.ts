@@ -8,7 +8,7 @@ import {
 	ICONS,
 	isIconName,
 	isPickableIcon
-} from '#lib/icons.ts';
+} from '#lib/game/icons.ts';
 
 describe('icon registry', () => {
 	it('every category offers 14 pickable icons (two rows of seven)', () => {

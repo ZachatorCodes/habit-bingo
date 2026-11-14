@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { newlyCompleted } from './celebrate-lines.ts';
+import { newlyCompleted } from './celebrate.ts';
 import type { CardScore } from '#lib/game/score.ts';
 
 const score = (lines: number[][], tiers: CardScore['tiers'] = []): CardScore => ({

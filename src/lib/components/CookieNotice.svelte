@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
 	import { fly } from 'svelte/transition';
-	import { flyOrFade } from '#lib/motion.ts';
+	import { flyOrFade } from '#lib/components/ui/motion.ts';
 
 	const KEY = 'cookieNoticeDismissed';
 	let visible = $state(false);

@@ -9,14 +9,15 @@ import { normalizeRule, targetRange, type HabitRule } from '#lib/game/habit-rule
 import { highlightChanges } from '#lib/game/feed.ts';
 import { canBuildNextMonth } from '#lib/game/next-month.ts';
 import { prorateTarget } from '#lib/game/proration.ts';
-import type { IconName } from '#lib/icons.ts';
+import type { IconName } from '#lib/game/icons.ts';
 import { isUniqueViolation } from '#lib/server/auth/sign-up.ts';
 import { localDate, startOfLocalDay } from '#lib/server/clock.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { card, cardSquare, feedEvent } from '#lib/server/db/schema.ts';
 import { postCardStarted, syncHighlights } from '#lib/server/feed.ts';
 import { highlightState } from '#lib/server/card-view.ts';
-import { listHabits, type Habit } from '#lib/server/habits.ts';
+import { listHabits } from '#lib/server/habits.ts';
+import type { Habit } from '#lib/game/types.ts';
 
 const EDIT_WINDOW_MS = 48 * 3_600_000;
 

@@ -5,7 +5,7 @@
 	import { resolve } from '$app/paths';
 	import { tick, type Snippet } from 'svelte';
 	import { prefersReducedMotion, Spring } from 'svelte/motion';
-	import { burst, tap } from '#lib/celebrate.ts';
+	import { burst, tap } from '#lib/components/card/celebrate.ts';
 	import Check from 'phosphor-svelte/lib/Check';
 	import Plus from 'phosphor-svelte/lib/Plus';
 	import BingoSquare from './BingoSquare.svelte';

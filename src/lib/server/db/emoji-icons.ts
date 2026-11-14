@@ -1,4 +1,4 @@
-import type { IconName } from '#lib/icons.ts';
+import type { IconName } from '#lib/game/icons.ts';
 
 /** Maps the retired emoji to curated icons; migration 0011 mirrors this exactly. Unmapped emoji fall back to `sparkle` (avatars: `smiley`). */
 export const EMOJI_TO_ICON: Readonly<Record<string, IconName>> = {

@@ -9,7 +9,7 @@
 	import Sheet from '#lib/components/Sheet.svelte';
 	import BingoCelebration from '#lib/components/BingoCelebration.svelte';
 	import { CARD_SIZES } from '#lib/game/card-layout.ts';
-	import { newlyCompleted } from '#lib/celebrate-lines.ts';
+	import { newlyCompleted } from '#lib/game/celebrate.ts';
 	import type { CardScore, Tier } from '#lib/game/score.ts';
 	import Hero from '#lib/components/Hero.svelte';
 	import Icon from '#lib/components/Icon.svelte';

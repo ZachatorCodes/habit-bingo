@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isIconName } from '#lib/icons.ts';
+import { isIconName } from '#lib/game/icons.ts';
 import { isCategoryId } from './categories';
 import { describeRule, normalizeRule } from './habit-rules';
 import { STARTERS } from './starters';

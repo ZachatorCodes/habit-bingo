@@ -1,6 +1,6 @@
 // The card builder's draft and its step rules. Saving and loading drafts lives in
 // lib/server/card-drafts.ts.
-import type { IconName } from '#lib/icons.ts';
+import type { IconName } from '#lib/game/icons.ts';
 import { monthOf } from './calendar.ts';
 import type { CardSize } from './card-layout.ts';
 import { evaluateSquare } from './evaluate.ts';

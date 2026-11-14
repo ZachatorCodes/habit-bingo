@@ -8,19 +8,9 @@ import {
 import { CARD_SIZES, type CardSize } from '#lib/game/card-layout.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { feedEvent, groupMember, reaction, user } from '#lib/server/db/schema.ts';
-import type { FeedEventType } from '#lib/server/db/schema/feed.ts';
+import type { FeedEventType, FeedItem } from '#lib/game/types.ts';
 
 export const FEED_PAGE = 30;
-
-export type FeedItem = {
-	id: string;
-	type: FeedEventType;
-	payload: Record<string, unknown>;
-	createdAt: Date;
-	author: { userId: string; displayUsername: string | null; avatarIcon: string };
-	reactions: Record<ReactionIcon, number>;
-	mine: ReactionIcon | null;
-};
 
 const isReaction = (icon: string): icon is ReactionIcon =>
 	(REACTIONS as readonly string[]).includes(icon);

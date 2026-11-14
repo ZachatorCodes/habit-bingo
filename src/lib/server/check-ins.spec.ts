@@ -8,7 +8,8 @@ import { createTestDb } from '#lib/server/db/test-db.ts';
 import type { Rewards } from '#lib/game/types.ts';
 import { startCard, updateCard, type Card, type CardPlan } from './cards';
 import { getCheckIns, logCheckIn, MAX_COUNT, setCheckIn } from './check-ins';
-import { createHabit, updateHabit, type Habit } from './habits';
+import { createHabit, updateHabit } from './habits';
+import type { Habit } from '#lib/game/types.ts';
 
 let db: Db;
 

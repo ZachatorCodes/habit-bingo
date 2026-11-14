@@ -13,9 +13,9 @@ import {
 	getHabit,
 	listHabits,
 	restoreHabit,
-	updateHabit,
-	type HabitInput
+	updateHabit
 } from './habits';
+import type { HabitInput } from '#lib/game/types.ts';
 
 let db: Db;
 

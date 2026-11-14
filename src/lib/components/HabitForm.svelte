@@ -6,7 +6,7 @@
 	import IconPicker from './IconPicker.svelte';
 	import TextField from './TextField.svelte';
 	import { CATEGORIES, type CategoryId } from '#lib/game/categories.ts';
-	import { CATEGORY_ICON, FALLBACK_ICON } from '#lib/icons.ts';
+	import { CATEGORY_ICON, FALLBACK_ICON } from '#lib/game/icons.ts';
 	import {
 		defaultCountMode,
 		describeRule,
@@ -16,7 +16,7 @@
 		type Direction,
 		type Period
 	} from '#lib/game/habit-rules.ts';
-	import type { HabitInput } from '#lib/server/habits.ts';
+	import type { HabitInput } from '#lib/game/types.ts';
 
 	type Props = {
 		values: HabitInput;

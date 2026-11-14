@@ -6,7 +6,7 @@
 	import Hero from '#lib/components/Hero.svelte';
 	import HabitForm from '#lib/components/HabitForm.svelte';
 	import Seo from '#lib/components/Seo.svelte';
-	import type { HabitInput } from '#lib/server/habits.ts';
+	import type { HabitInput } from '#lib/game/types.ts';
 
 	type Props = {
 		title: string;

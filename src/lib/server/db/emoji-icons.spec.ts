@@ -5,7 +5,7 @@ import { PGlite } from '@electric-sql/pglite';
 import { drizzle } from 'drizzle-orm/pglite';
 import { migrate } from 'drizzle-orm/pglite/migrator';
 import { afterEach, describe, expect, it } from 'vitest';
-import { isIconName } from '#lib/icons.ts';
+import { isIconName } from '#lib/game/icons.ts';
 import { EMOJI_TO_ICON } from './emoji-icons.ts';
 
 // Frozen copies of the retired emoji lists, so the map stays checked after they leave the app.

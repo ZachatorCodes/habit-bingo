@@ -1,46 +1,11 @@
-<script lang="ts" module>
-	import type { SquareState } from '#lib/game/square-state.ts';
-
-	/** One habit square as the habit sheet shows it (spec §4.6). */
-	export type SheetData = {
-		id: string;
-		icon: string;
-		name: string;
-		/** "Health" */
-		category: string;
-		/** "8 times a day" */
-		rule: string;
-		/** `times` gets a stepper, `days` a "Done that day" toggle. */
-		countMode: 'times' | 'days';
-		period: 'day' | 'week' | 'month';
-		state: SquareState;
-		progress: number;
-		/** Counts toward lines and tiers now. */
-		counting: boolean;
-		stateText: string;
-		progressText: string;
-		today: string;
-		/** The day being logged. */
-		day: string;
-		/** That day's count. */
-		count: number;
-		/** The card's month: every date with its count, and whether it can be logged. */
-		calendar: {
-			month: string;
-			weekStartsOn: 'monday' | 'sunday';
-			direction: 'atLeast' | 'atMost';
-			days: Record<string, { count: number; loggable: boolean }>;
-		};
-	};
-</script>
-
 <script lang="ts">
+	import type { SheetData } from '#lib/game/types.ts';
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { tick } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
-	import { burst, tap } from '#lib/celebrate.ts';
+	import { burst, tap } from '#lib/components/card/celebrate.ts';
 	import { monthName, weekday } from '#lib/game/calendar.ts';
 	import Plus from 'phosphor-svelte/lib/Plus';
 	import MonthCalendar from './MonthCalendar.svelte';

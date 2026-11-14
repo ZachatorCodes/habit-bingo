@@ -73,7 +73,12 @@ leaderboard ranks this month's cards by % complete, then by complete lines.
   `@theme`), Phosphor icons and Nunito.
 - **Data:** Drizzle ORM on Postgres (Neon), with migrations in [`drizzle/`](drizzle/).
 - **Auth:** Better Auth (username and password, with optional Google), invite-only.
-- **Game rules:** pure TypeScript in [`src/lib/game/`](src/lib/game/), covered by tests at 100%.
+- **Layers** ([ADR 0007](docs/adr/0007-layering-and-boundaries.md), enforced by lint):
+  - **Game rules and shared types:** pure TypeScript in [`src/lib/game/`](src/lib/game/), covered
+    by tests at 100%.
+  - **Services:** [`src/lib/server/`](src/lib/server/), each taking the database first.
+  - **Components:** [`src/lib/components/`](src/lib/components/).
+  - **Routes:** thin [`src/routes/`](src/routes/) files that call services and rules.
 - **Tests:**
   - **Vitest** for server code against an in-memory PGlite Postgres, and browser-mode component
     tests.

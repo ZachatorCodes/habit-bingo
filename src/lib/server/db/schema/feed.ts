@@ -11,11 +11,9 @@ import {
 	unique
 } from 'drizzle-orm/pg-core';
 import { REACTIONS } from '#lib/game/feed.ts';
+import type { FeedEventType } from '#lib/game/types.ts';
 import { user } from './auth.ts';
 import { card } from './cards.ts';
-
-export type FeedEventType =
-	'cardStarted' | 'squareComplete' | 'bingo' | 'sixtyPercent' | 'blackout' | 'checkIn';
 
 export const feedEvent = pgTable(
 	'feed_event',

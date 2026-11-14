@@ -1,4 +1,4 @@
-import type { IconName } from '#lib/icons.ts';
+import type { IconName } from '#lib/game/icons.ts';
 import type { CategoryId } from './categories.ts';
 import type { HabitRule } from './habit-rules.ts';
 

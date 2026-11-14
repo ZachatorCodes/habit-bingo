@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AVATAR_ICONS } from '#lib/icons.ts';
+import { AVATAR_ICONS } from '#lib/game/icons.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { account, passwordReset, session, user } from '#lib/server/db/schema.ts';
 import { createTestDb } from '#lib/server/db/test-db.ts';

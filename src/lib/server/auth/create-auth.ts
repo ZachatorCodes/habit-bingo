@@ -4,7 +4,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { username } from 'better-auth/plugins';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 import type { RequestEvent } from '@sveltejs/kit';
-import { DEFAULT_AVATAR_ICON } from '#lib/icons.ts';
+import { DEFAULT_AVATAR_ICON } from '#lib/game/icons.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { account, rateLimit, session, user, verification } from '#lib/server/db/schema.ts';
 import { FULL_MESSAGE, groupForInvite, joinGroup, MAX_MEMBERS } from '#lib/server/groups.ts';

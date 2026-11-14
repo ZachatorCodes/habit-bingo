@@ -1,4 +1,4 @@
-import type { HabitInput } from './habits.ts';
+import type { HabitInput } from '#lib/game/types.ts';
 import { formText } from './request.ts';
 
 /** Reads the habit form's fields; validation happens in the habits service. */

@@ -15,7 +15,8 @@ import {
 	type CardPlan
 } from './cards';
 import type { Rewards } from '#lib/game/types.ts';
-import { archiveHabit, createHabit, updateHabit, type Habit } from './habits';
+import { archiveHabit, createHabit, updateHabit } from './habits';
+import type { Habit } from '#lib/game/types.ts';
 
 let db: Db;
 

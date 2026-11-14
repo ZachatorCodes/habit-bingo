@@ -6,7 +6,7 @@ import { evaluateSquare } from '#lib/game/evaluate.ts';
 import { describeRule } from '#lib/game/habit-rules.ts';
 import { stateText } from '#lib/game/state-text.ts';
 import { progressText } from '#lib/game/today.ts';
-import type { SheetData } from '#lib/components/HabitSheet.svelte';
+import type { SheetData } from '#lib/game/types.ts';
 import { requireUser } from '#lib/server/auth/guards.ts';
 import { getCard } from '#lib/server/cards.ts';
 import { getCheckIns, logCheckIn, setCheckIn } from '#lib/server/check-ins.ts';

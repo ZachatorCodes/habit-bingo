@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, gt, sql } from 'drizzle-orm';
-import { isPickableIcon } from '#lib/icons.ts';
+import { isPickableIcon } from '#lib/game/icons.ts';
 import { createInvite, getInviteStatus } from '#lib/server/auth/invites.ts';
 import type { Db } from '#lib/server/db/client.ts';
 import { group, groupMember, invite, user } from '#lib/server/db/schema.ts';

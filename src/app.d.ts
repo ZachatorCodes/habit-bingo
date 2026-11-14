@@ -1,6 +1,6 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
-import type { SheetData } from '#lib/components/HabitSheet.svelte';
+import type { SheetData } from '#lib/game/types.ts';
 import type { Auth } from '#lib/server/auth/create-auth.ts';
 
 type AuthSession = Auth['$Infer']['Session'];

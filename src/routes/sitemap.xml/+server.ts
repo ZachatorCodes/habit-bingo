@@ -1,6 +1,5 @@
-import { PUBLIC_PATHS } from '#lib/public-paths.ts';
 import { publicCache } from '#lib/server/cache.ts';
-import { sitemapXml } from '#lib/server/seo.ts';
+import { PUBLIC_PATHS, sitemapXml } from '#lib/server/seo.ts';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = ({ url, setHeaders }) => {

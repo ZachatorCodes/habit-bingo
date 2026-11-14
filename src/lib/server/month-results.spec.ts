@@ -8,7 +8,8 @@ import { cardView } from './card-view.ts';
 import { startCard, type Card, type CardPlan } from './cards.ts';
 import { logCheckIn } from './check-ins.ts';
 import { localDate } from './clock.ts';
-import { createHabit, type Habit } from './habits.ts';
+import { createHabit } from './habits.ts';
+import type { Habit } from '#lib/game/types.ts';
 import { finalizeMonths, getResult, listResults, markSeen, newestUnseen } from './month-results.ts';
 
 let db: Db;

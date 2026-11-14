@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
 	import ProgressRing from './ProgressRing.svelte';
-	import { fullScreenConfetti } from '#lib/celebrate.ts';
+	import { fullScreenConfetti } from '#lib/components/card/celebrate.ts';
 	import type { Tier } from '#lib/game/score.ts';
 	import type { Rewards } from '#lib/game/types.ts';
 

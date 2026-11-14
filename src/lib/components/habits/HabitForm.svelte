@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import BingoSquare from './BingoSquare.svelte';
-	import Button from './Button.svelte';
-	import Icon from './Icon.svelte';
-	import IconPicker from './IconPicker.svelte';
-	import TextField from './TextField.svelte';
+	import BingoSquare from '#lib/components/card/BingoSquare.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import IconPicker from '#lib/components/ui/IconPicker.svelte';
+	import TextField from '#lib/components/ui/TextField.svelte';
 	import { CATEGORIES, type CategoryId } from '#lib/game/categories.ts';
 	import { CATEGORY_ICON, FALLBACK_ICON } from '#lib/game/icons.ts';
 	import {

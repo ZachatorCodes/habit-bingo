@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Check from 'phosphor-svelte/lib/Check';
-	import ProgressRing from './ProgressRing.svelte';
-	import Icon from './Icon.svelte';
+	import ProgressRing from '#lib/components/ui/ProgressRing.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
 	import { CATEGORIES } from '#lib/game/categories.ts';
 	import { describeRule } from '#lib/game/habit-rules.ts';
 	import type { Habit } from '#lib/game/types.ts';

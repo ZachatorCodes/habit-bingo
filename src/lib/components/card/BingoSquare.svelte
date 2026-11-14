@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import ProgressRing from './ProgressRing.svelte';
+	import ProgressRing from '#lib/components/ui/ProgressRing.svelte';
 	import type { SquareState } from '#lib/game/square-state.ts';
 
 	type Props = {

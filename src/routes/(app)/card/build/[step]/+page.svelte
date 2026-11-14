@@ -1,17 +1,17 @@
 <script lang="ts">
-	import Icon from '#lib/components/Icon.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
 	import { enhance } from '$app/forms';
-	import BuilderSteps from '#lib/components/BuilderSteps.svelte';
-	import Button from '#lib/components/Button.svelte';
-	import CardBoard from '#lib/components/CardBoard.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import HabitForm from '#lib/components/HabitForm.svelte';
-	import HabitPicker from '#lib/components/HabitPicker.svelte';
-	import TargetList from '#lib/components/TargetList.svelte';
-	import TextField from '#lib/components/TextField.svelte';
-	import SizePicker from '#lib/components/SizePicker.svelte';
+	import BuilderSteps from '#lib/components/builder/BuilderSteps.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import CardBoard from '#lib/components/card/CardBoard.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import HabitForm from '#lib/components/habits/HabitForm.svelte';
+	import HabitPicker from '#lib/components/builder/HabitPicker.svelte';
+	import TargetList from '#lib/components/builder/TargetList.svelte';
+	import TextField from '#lib/components/ui/TextField.svelte';
+	import SizePicker from '#lib/components/builder/SizePicker.svelte';
 	import { page } from '$app/state';
-	import Seo from '#lib/components/Seo.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { SquareState } from '#lib/game/square-state.ts';
 	import type { PageProps } from './$types';
 

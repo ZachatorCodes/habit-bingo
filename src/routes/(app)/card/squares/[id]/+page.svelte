@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import HabitSheet from '#lib/components/HabitSheet.svelte';
+	import HabitSheet from '#lib/components/card/HabitSheet.svelte';
 	import { page } from '$app/state';
-	import Seo from '#lib/components/Seo.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

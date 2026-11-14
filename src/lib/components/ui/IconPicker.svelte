@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from '#lib/components/Icon.svelte';
+	import Icon from './Icon.svelte';
 	import { CATEGORIES } from '#lib/game/categories.ts';
 	import { ICONS, isPickableIcon, type IconName } from '#lib/game/icons.ts';
 

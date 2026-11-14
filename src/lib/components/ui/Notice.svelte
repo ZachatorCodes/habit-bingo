@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Icon from '#lib/components/Icon.svelte';
+	import Icon from './Icon.svelte';
 
 	type Props = { tone: 'error' | 'success'; children: Snippet };
 	let { tone, children }: Props = $props();

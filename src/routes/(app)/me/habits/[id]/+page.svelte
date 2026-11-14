@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from '#lib/components/Icon.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
 	import HabitFormPage from '../HabitFormPage.svelte';
 	import type { PageProps } from './$types';
 

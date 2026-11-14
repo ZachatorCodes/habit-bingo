@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Button from '#lib/components/Button.svelte';
-	import SampleCard from '#lib/components/SampleCard.svelte';
-	import ProgressRing from '#lib/components/ProgressRing.svelte';
-	import Seo from '#lib/components/Seo.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import SampleCard from '#lib/components/card/SampleCard.svelte';
+	import ProgressRing from '#lib/components/ui/ProgressRing.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 
 	const steps = [
 		{

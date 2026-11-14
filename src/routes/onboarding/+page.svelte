@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
-	import Button from '#lib/components/Button.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import IconPicker from '#lib/components/IconPicker.svelte';
-	import Notice from '#lib/components/Notice.svelte';
-	import Seo from '#lib/components/Seo.svelte';
-	import TextField from '#lib/components/TextField.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import IconPicker from '#lib/components/ui/IconPicker.svelte';
+	import Notice from '#lib/components/ui/Notice.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
+	import TextField from '#lib/components/ui/TextField.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import CardBoard from '#lib/components/CardBoard.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import Icon from '#lib/components/Icon.svelte';
-	import Seo from '#lib/components/Seo.svelte';
+	import CardBoard from '#lib/components/card/CardBoard.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { CardSize } from '#lib/game/card-layout.ts';
 	import type { PageProps } from './$types';
 

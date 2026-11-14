@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Icon from '#lib/components/Icon.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
 	import type { Snippet } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import Hero from '#lib/components/Hero.svelte';
-	import HabitForm from '#lib/components/HabitForm.svelte';
-	import Seo from '#lib/components/Seo.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import HabitForm from '#lib/components/habits/HabitForm.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { HabitInput } from '#lib/game/types.ts';
 
 	type Props = {

@@ -2,8 +2,8 @@
 	import './layout.css';
 	import { dev } from '$app/env';
 	import { page } from '$app/state';
-	import CookieNotice from '#lib/components/CookieNotice.svelte';
-	import SiteFooter from '#lib/components/SiteFooter.svelte';
+	import CookieNotice from '#lib/components/ui/CookieNotice.svelte';
+	import SiteFooter from '#lib/components/ui/SiteFooter.svelte';
 	import { onMount } from 'svelte';
 	import type { LayoutProps } from './$types';
 

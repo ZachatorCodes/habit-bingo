@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Habit } from '#lib/game/types.ts';
-	import TextField from './TextField.svelte';
+	import TextField from '#lib/components/ui/TextField.svelte';
 
 	type Row = {
 		habit: Pick<Habit, 'id' | 'icon' | 'name' | 'direction' | 'period' | 'countMode' | 'target'>;

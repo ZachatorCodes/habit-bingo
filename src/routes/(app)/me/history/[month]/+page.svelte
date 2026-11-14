@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Button from '#lib/components/Button.svelte';
-	import CardBoard from '#lib/components/CardBoard.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import Icon from '#lib/components/Icon.svelte';
-	import ProgressRing from '#lib/components/ProgressRing.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import CardBoard from '#lib/components/card/CardBoard.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import ProgressRing from '#lib/components/ui/ProgressRing.svelte';
 	import { page } from '$app/state';
-	import Seo from '#lib/components/Seo.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

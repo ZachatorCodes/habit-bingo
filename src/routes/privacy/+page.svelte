@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Hero from '#lib/components/Hero.svelte';
-	import Seo from '#lib/components/Seo.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 </script>
 
 <Seo

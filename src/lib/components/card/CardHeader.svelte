@@ -4,8 +4,8 @@
 	import { nextTier, squaresToLine, type CardScore, type Tier } from '#lib/game/score.ts';
 	import type { SquareState } from '#lib/game/square-state.ts';
 	import type { Rewards } from '#lib/game/types.ts';
-	import Hero from './Hero.svelte';
-	import Icon from './Icon.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
 
 	type Props = {
 		monthName: string;

@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { enhance, type SubmitFunction } from '$app/forms';
-	import Button from '#lib/components/Button.svelte';
-	import ConfirmAction from '#lib/components/ConfirmAction.svelte';
-	import CopyField from '#lib/components/CopyField.svelte';
-	import Hero from '#lib/components/Hero.svelte';
-	import Icon from '#lib/components/Icon.svelte';
-	import Notice from '#lib/components/Notice.svelte';
-	import TextField from '#lib/components/TextField.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import ConfirmAction from '#lib/components/ui/ConfirmAction.svelte';
+	import CopyField from '#lib/components/ui/CopyField.svelte';
+	import Hero from '#lib/components/ui/Hero.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import Notice from '#lib/components/ui/Notice.svelte';
+	import TextField from '#lib/components/ui/TextField.svelte';
 	import { page } from '$app/state';
-	import Seo from '#lib/components/Seo.svelte';
+	import Seo from '#lib/components/ui/Seo.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();

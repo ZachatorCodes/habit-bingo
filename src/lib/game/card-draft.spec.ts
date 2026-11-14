@@ -9,6 +9,7 @@ import {
 	firstOpenStep,
 	keptSquares,
 	nextStep,
+	parseDraft,
 	readTargets,
 	reopen,
 	startDateOf,
@@ -201,5 +202,54 @@ describe('boardPreview', () => {
 			{ icon: 'star', name: 'Free', state: 'free' },
 			{ icon: 'person-simple-walk', name: 'Walk', state: expect.any(String) }
 		]);
+	});
+});
+
+describe('parseDraft', () => {
+	const stored = {
+		month: '2026-10',
+		cardId: null,
+		size: 3,
+		habitIds: ['a', 'b'],
+		targets: { a: 2 },
+		rewards: { bingo: 'Pizza', sixty: '', blackout: '' },
+		layout: ['a', null, 'b'],
+		completed: ['size', 'habits']
+	};
+
+	it('reads a stored draft, dropping unknown keys', () => {
+		expect(parseDraft(stored)).toEqual(stored);
+		expect(parseDraft({ ...stored, extra: 1, rewards: { ...stored.rewards, extra: 2 } })).toEqual(
+			stored
+		);
+		expect(parseDraft({ ...stored, cardId: 'c', size: null, layout: null })).toEqual({
+			...stored,
+			cardId: 'c',
+			size: null,
+			layout: null
+		});
+		expect(parseDraft({ ...stored, size: 5 })?.size).toBe(5);
+	});
+
+	it.each([
+		['not an object', 'draft'],
+		['null', null],
+		['an array', []],
+		['a bad month', { ...stored, month: 7 }],
+		['a bad card id', { ...stored, cardId: 1 }],
+		['a bad size', { ...stored, size: 4 }],
+		['bad habit ids', { ...stored, habitIds: [1] }],
+		['habit ids not a list', { ...stored, habitIds: 'a' }],
+		['bad targets', { ...stored, targets: { a: '2' } }],
+		['targets not an object', { ...stored, targets: null }],
+		['targets as a list', { ...stored, targets: [1] }],
+		['bad rewards', { ...stored, rewards: { bingo: 'x', sixty: '' } }],
+		['rewards missing', { ...stored, rewards: undefined }],
+		['a bad layout', { ...stored, layout: [1] }],
+		['a layout not a list', { ...stored, layout: 'a' }],
+		['a bad step', { ...stored, completed: ['dance'] }],
+		['steps not a list', { ...stored, completed: 'size' }]
+	])('rejects %s', (_, data) => {
+		expect(parseDraft(data)).toBeNull();
 	});
 });

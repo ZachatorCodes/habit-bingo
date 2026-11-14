@@ -8,7 +8,12 @@ import { createTestDb } from '#lib/server/db/test-db.ts';
 import type { Auth } from './create-auth.ts';
 import { createInvite } from './invites.ts';
 import { PASSWORD_MESSAGES } from './password-policy.ts';
-import { signUpWithPassword, USERNAME_TAKEN_MESSAGE } from './sign-up.ts';
+import {
+	signUpWithPassword,
+	USERNAME_RULES_MESSAGE,
+	USERNAME_TAKEN_MESSAGE,
+	validateSignUpForm
+} from './sign-up.ts';
 import { createTestAuth } from './test-auth.ts';
 
 const PASSWORD = 'correct horse battery';
@@ -185,6 +190,56 @@ describe('concurrent sign-ups for the same username', () => {
 			ok: false,
 			field: 'form',
 			message: 'This group is full.'
+		});
+	});
+});
+
+describe('validateSignUpForm', () => {
+	const good = { username: ' Sam_1 ', name: ' Sam ', password: 'long enough pw' };
+
+	it('trims the username and name, and keeps the password as typed', async () => {
+		expect(await validateSignUpForm(good)).toEqual({
+			ok: true,
+			value: { username: 'Sam_1', name: 'Sam', password: 'long enough pw' }
+		});
+	});
+
+	it('reports every field problem at once, checking the password against the trimmed username', async () => {
+		expect(await validateSignUpForm({ username: 'ab', name: ' ', password: 'short' })).toEqual({
+			ok: false,
+			errors: {
+				username: USERNAME_RULES_MESSAGE,
+				name: 'Enter a display name.',
+				password: PASSWORD_MESSAGES.tooShort
+			}
+		});
+		expect(
+			await validateSignUpForm({
+				username: ' sam_12345 ',
+				name: 'x'.repeat(41),
+				password: 'SAM_12345'
+			})
+		).toEqual({
+			ok: false,
+			errors: { name: 'Use at most 40 characters.', password: PASSWORD_MESSAGES.tooShort }
+		});
+		expect(
+			await validateSignUpForm({ username: ' sam_123456 ', name: 'Sam', password: 'SAM_123456' })
+		).toEqual({ ok: false, errors: { password: PASSWORD_MESSAGES.sameAsUsername } });
+	});
+
+	it('checks each field, but skips the password rules when any field is missing', async () => {
+		expect(await validateSignUpForm({ username: null, name: 'Sam', password: 'short' })).toEqual({
+			ok: false,
+			errors: { username: USERNAME_RULES_MESSAGE }
+		});
+		expect(await validateSignUpForm({ username: 'ab', name: null, password: null })).toEqual({
+			ok: false,
+			errors: {
+				username: USERNAME_RULES_MESSAGE,
+				name: 'Enter a display name.',
+				password: PASSWORD_MESSAGES.tooShort
+			}
 		});
 	});
 });

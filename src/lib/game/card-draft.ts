@@ -197,3 +197,44 @@ export function boardPreview(
 			: { icon: 'star', name: 'Free', state: 'free' as const };
 	});
 }
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null && !Array.isArray(value);
+const isString = (value: unknown): value is string => typeof value === 'string';
+const isStringList = (value: unknown): value is string[] =>
+	Array.isArray(value) && value.every(isString);
+
+/** A draft read back from storage, keeping only known fields, or null when it doesn't fit. */
+export function parseDraft(data: unknown): CardDraft | null {
+	if (!isObject(data)) return null;
+	const { month, cardId, size, habitIds, targets, rewards, layout, completed } = data;
+	if (!isString(month) || !(cardId === null || isString(cardId))) return null;
+	if (!(size === null || size === 3 || size === 5) || !isStringList(habitIds)) return null;
+	if (!isObject(targets) || !Object.values(targets).every((t) => Number.isFinite(t))) return null;
+	if (!isObject(rewards) || ![rewards.bingo, rewards.sixty, rewards.blackout].every(isString))
+		return null;
+	if (!(
+		layout === null ||
+		(Array.isArray(layout) && layout.every((l) => l === null || isString(l)))
+	))
+		return null;
+	if (
+		!Array.isArray(completed) ||
+		!completed.every((s) => (STEPS as readonly unknown[]).includes(s))
+	)
+		return null;
+	return {
+		month,
+		cardId,
+		size,
+		habitIds: [...habitIds],
+		targets: { ...(targets as Record<string, number>) },
+		rewards: {
+			bingo: rewards.bingo as string,
+			sixty: rewards.sixty as string,
+			blackout: rewards.blackout as string
+		},
+		layout: layout && [...layout],
+		completed: [...completed] as Step[]
+	};
+}
